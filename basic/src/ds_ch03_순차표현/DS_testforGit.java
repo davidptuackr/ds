@@ -5,6 +5,7 @@ public class DS_testforGit {
 	public static void main(String[] args) {
 
 		System.out.println("TEST FILE FOR GIT STUDY");
+		System.out.println("ADD ONE MORE LINE :)");
 	}
 
 }
