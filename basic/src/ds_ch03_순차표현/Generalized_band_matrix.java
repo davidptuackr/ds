@@ -59,15 +59,33 @@ public class Generalized_band_matrix {
         return A;
     }
 
-    static int[] flat(int[][] A) {
+    static int[] flat(int[][] A, int a, int b) {
 
         int n = A.length;
-        int a = 0, b = 0, s = 0;
+        int s = 0, cnt0_u = 0, cnt0_d = 0;
 
-        while (A[a][0] != 0) a++;
-        while (A[0][b] != 0) b++;
+        /*
+        an = 1, 3, 6, 10, ...
+        bn = 2, 3, 4, ...
+           = n+1
 
-        int[] B = new int[(n*n)-(((n-a)*(n-a) + (n-b)*(n-b))/2)];
+        Sbn
+            = Sigma(k=1 to n) k+1
+        an
+            = 1+Sigma(k=1 to n-1) k+1
+            = 1+n(n-1)/2+n-1
+            = n+n(n-1)/2
+            = n/2 (n+1)
+            = (n^2+n)/2
+        San
+            = 1/2 Sigma(k=1 to n) (k^2+k)
+            = 1/2 (n(n+1)(2n+1)/6+n(n+1)/2)
+         */
+
+        cnt0_d = ((n-a)+1)*(n-a)/2;
+        cnt0_u = ((n-b)+1)*(n-b)/2;
+
+        int[] B = new int[n*n-(cnt0_d+cnt0_u)];
 
         for (int x = a-1; x >= 0; x--) {
             for (int y = 0; y <= (n-x-1); y++) {
@@ -88,6 +106,29 @@ public class Generalized_band_matrix {
         }
 
         return B;
+    }
+
+    static void value(int n, int a, int b, int i, int j, int[] B, int[][] A) {
+
+        int bloc = 0;
+        int s = 0;
+
+        if (i >= j) {
+            for(int x = 1; x <= (a-(i-j)-1); x++) { s += n-(a-(x)); }
+            bloc = s + j;
+        }
+        else {
+            for(int x = 1; x <= (a); x++) { s += n-(a-(x)); }
+            for (int y = 1; y <= (j-i)-1; y++) { s += (n-y); }
+            bloc = s + i;
+        }
+
+
+        System.out.format(
+                "A[%d][%d]: %d >>> B[%d]: %d\n",
+                i, j, A[i][j],
+                bloc, B[bloc]
+        );
     }
 
     static void print_matrix(int[][] A) {
@@ -127,10 +168,9 @@ public class Generalized_band_matrix {
         int b = 2;
 
         int[][] A = init(n, a, b);
-        int[] B = flat(A);
+        int[] B=  flat(A, a, b);
 
-
-        System.out.println( (n*n) );
+        value(n, a, b, 2, 1, B, A);
 
     }
 }
