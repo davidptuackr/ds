@@ -87,15 +87,6 @@ class LinkedList implements Cloneable {
         System.out.format("List has %d elements\n\n", length());
     }
 
-    @Override
-    public LinkedList clone() {
-        try {
-            return (LinkedList) super.clone();
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
-
     /*
     04.1 단순 연결 리스트의 길이를 계산하는 함수 length() 만들기
     풀이
@@ -358,6 +349,26 @@ class LinkedList implements Cloneable {
         L.print();
         R.print();
     }
+
+    /*
+    04.5 단순 연결 리스트에서 최소값을 가진 원소 찾아내기
+     */
+    public String get_List_min() {
+
+        if (this.head == null) return null;
+
+        String lst_min = this.head.data;
+        Node p = this.head;
+
+        while (p != null) {
+            if (p.data.compareTo(lst_min) <= 1) {
+                lst_min = p.data;
+            }
+            p = p.link;
+        }
+
+        return lst_min;
+    }
 }
 
 public class LinkedList_test {
@@ -369,12 +380,12 @@ public class LinkedList_test {
         LinkedList OL = new LinkedList();
         LinkedList ZL = new LinkedList();
 
-        L1.add_last_node("Amberjack");
-        L1.add_last_node("Colonial");
-        L1.add_last_node("Crestwood");
         L1.add_last_node("Mattox");
         L1.add_last_node("Zydeco");
         L1.add_last_node("Bengal");
+        L1.add_last_node("Amberjack");
+        L1.add_last_node("Colonial");
+        L1.add_last_node("Crestwood");
         L1.add_last_node("Explore");
         L1.add_last_node("Triton");
 
@@ -405,6 +416,16 @@ public class LinkedList_test {
         LinkedList.ordered_concat(OL, L2).print();
          */
 
+        /*
         LinkedList.retrieve(L1, L2, 3, false);
+        LinkedList.retrieve(L1, OL, 3, false);
+        LinkedList.retrieve(L2, L1, 3, true);
+        LinkedList.retrieve(L2, L1, 3, false);
+        LinkedList.retrieve(L2, ZL, 2, false);
+         */
+
+        if (L1.get_List_min() == null) System.out.println("EMPTY LIST");
+        else System.out.format("LEAST ELEMENT: %s\n", L1.get_List_min());
+
     }
 }
