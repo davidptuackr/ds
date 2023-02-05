@@ -48,15 +48,14 @@ class CircularPoly {
 
     public void print() {
         PolyNode p = head;
-        int i = 0;
 
         if (head == null) System.out.print("EMPTY POLY");
         else {
             while (!p.link.equals(head)) {
-                System.out.format("%dX^%d + \n", i++, p.coef, p.exp);
+                System.out.format("%dX^%d + ", p.coef, p.exp);
                 p = p.link;
             }
-            System.out.format("%dX^%d\n", i++, p.coef, p.exp); // 마지막 직전에 멈추기 때문에 한 번 더 출력
+            System.out.format("%dX^%d\n", p.coef, p.exp); // 마지막 직전에 멈추기 때문에 한 번 더 출력
         }
     }
 
@@ -86,15 +85,42 @@ class CircularPoly {
         3. 현재 노드의 차수와 바로 앞 노드의 차수가 같으면 서로 결합한다
      */
 
-    CircularPoly polymult(CircularPoly A, CircularPoly B) {
+    static CircularPoly polymult(CircularPoly A, CircularPoly B) {
         CircularPoly C = new CircularPoly();
         PolyNode ap, bp, cp;
         ap = A.head;
         bp = B.head;
 
-        for (int i = A.length(); i > 0; i--) {
-            for (int j = B.length(); j > 0; j--) {
-                C.add_last_node(ap.coef * bp.coef, ap.exp + bp.exp);
+
+        /*
+        증명
+            1. A, B 순회에 m * n
+            2. 차수가 같은 노드 찾는데 m OR n
+            3. 조밀할 경우 찾을 필요 없으므로 2는 무효 >>> 총 시간복잡도 big-o(mn)
+         */
+
+        for (int i = 0; i < A.length(); i++) {
+            for (int j = 0; j < B.length(); j++) {
+                int coef = ap.coef * bp.coef;
+                int exp = ap.exp + bp.exp;
+                cp = C.head;
+
+                if (cp == null) {
+                    C.add_last_node(coef, exp);
+                    cp = C.head;
+                    bp = bp.link;
+                    continue;
+                }
+
+                while (!cp.link.equals(C.head) && cp.exp != exp) {
+                    cp = cp.link;
+                }
+                if (cp.exp == exp) {
+                    cp.coef += coef;
+                }
+                if (cp.link.equals(C.head) && cp.exp != exp) {
+                    C.add_last_node(coef, exp);
+                }
                 bp = bp.link;
             }
             ap = ap.link;
@@ -108,7 +134,19 @@ public class CircularPoly_test {
 
     public static void main(String[] args) {
 
+        CircularPoly A = new CircularPoly();
+        CircularPoly B = new CircularPoly();
 
+        for (int i = 4; i > 1; i--) {
+            A.add_last_node((i*2), (i));
+            B.add_last_node((i*3), (i+1));
+        }
+
+        A.print();
+        B.print();
+
+        CircularPoly C = CircularPoly.polymult(A, B);
+        C.print();
 
     }
 
