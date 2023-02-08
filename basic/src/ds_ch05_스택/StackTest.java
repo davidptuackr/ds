@@ -115,6 +115,106 @@ class M_Seq_Stack implements Stack {
     }
 }
 
+class Link_Stack implements Stack {
+
+    class Node {
+
+        Object data;
+        Node link;
+
+        public Node(Object x) {
+            data = x;
+            link = null;
+        }
+
+        public Node(Object x, Node next) {
+            data = x;
+            link = next;
+        }
+
+    }
+
+    Node top;
+
+    public Link_Stack() {
+        top = null;
+    }
+
+    @Override
+    public void push(Object x) {
+        Node new_top = new Node(x, top);
+        top = new_top;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return top == null;
+    }
+
+    @Override
+    public Object pop() {
+        if (isEmpty()) {
+            System.out.println("UNABLE TO POP. STACK IS EMPTY");
+            return null;
+        }
+        Object popped = top.data;
+        top = top.link;
+        return popped;
+    }
+
+    @Override
+    public void delete() {
+        if (isEmpty()) return;
+        else top = top.link;
+    }
+
+    @Override
+    public Object peek() {
+        return top.data;
+    }
+
+    public void print() {
+        Node p = top;
+        while (p != null) {
+            System.out.format(" %s ", p.data);
+            p = p.link;
+        }
+    }
+}
+
 public class StackTest {
+
+    public static void main(String[] args) {
+
+        /*Link_Stack ls1 = new Link_Stack();
+        ls1.push("zydeco");
+        ls1.print();*/
+
+        Link_Stack ops = new Link_Stack();
+
+        String infix = "A+B*C";
+
+        for (int i = 0; i < infix.length(); i++) {
+            char token = infix.charAt(i);
+            if (token == '(') {
+                ops.push(token);
+            }
+            else if (token == '+' || token == '-') {
+                ops.push(token);
+            }
+            else if (token == ')') {
+                char popped = (char) ops.pop();
+                while (popped != '(') {
+                    System.out.print(popped);
+                    popped = (char) ops.pop();
+                }
+                System.out.print((char) ops.pop());
+            }
+            else if (token == '*' || token == '/') {
+
+            }
+        }
+
+    }
 
 }
