@@ -1,6 +1,6 @@
 package ds_ch05_스택;
 
-interface Stack {
+interface Stack_test {
 
     // abstract void create() >>> 빈 스택 생성, 생성자로 대체
 
@@ -11,7 +11,8 @@ interface Stack {
     Object peek();
 }
 
-class Seq_Stack implements Stack {
+/*
+class Seq_Stack implements Stack_test {
 
     Object[] data;
     int top = -1;
@@ -51,7 +52,7 @@ class Seq_Stack implements Stack {
     }
 }
 
-class M_Seq_Stack implements Stack {
+class M_Seq_Stack implements Stack_test {
 
     Object data[];
     int[] tops;
@@ -115,7 +116,7 @@ class M_Seq_Stack implements Stack {
     }
 }
 
-class Link_Stack implements Stack {
+class Link_Stack implements Stack_test {
 
     class Node {
 
@@ -180,6 +181,7 @@ class Link_Stack implements Stack {
         }
     }
 }
+*/
 
 class Maze_Path {
 
@@ -238,7 +240,6 @@ class Maze_Path {
         }
     }
 }
-
 
 /*
     미로 문제
