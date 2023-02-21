@@ -267,30 +267,121 @@ class DLN_Stack implements Stack {
         top = top.left;
         top.right = null;
     }
-    
+
 }
 
 /*
     05.6 좀 더 일반적인 후위 표기식 변환
         구현 1. 음수 처리
         구현 2. 논리 연산 처리
- */
 
+    처리 방안
+        음수, 빼기 연산은 앞에 -1을 곱한 것으로 간주한다
+            ex.
+                A - B >>> A + (-1 * B)
+                A * -B >>> A * -1 * B
+        논리 연산
+            not: 발견 즉시 push, 여는 괄호까지 나오고 맨 마지막에 pop
+            and, or, cmp
+                괄호가 없을 땐: 발견 즉시 push, 피연산자 만나면 그 때 출력
+                괄호가 있을 땐: 닫는 괄호가 나올 때 출력
+
+        피연산자: 무조건 출력
+        +
+            1. top == *, /인 경우: top이 * OR /이 아닐 때까지 전부 pop 한 후 push
+            2. top == +, (인 경우: 그냥 push
+            3. isEmpty == true: 2와 같음
+        -
+            1. 음수를 나타낼 때 쓸 경우: -1을 곱한 것으로 간주한다 (ex. -X+Y >>> (-1*X)+Y >>> -1X*Y+
+                1.1 push - // push *
+                1.2 print -1
+                1.3 다음 토큰으로
+                1.4 print X
+                1.5 pop - as *
+            2. 빼기 연산을 나타낼 때 쓸 경우: -1을 곱하고 더하기로 바꾼다 (ex. A-B >>> A+(-1*B) >>> A-1B*+)
+                2.1 push - // push *
+                2.2 print -1
+                2.3 다음 토큰으로
+                2.4 print B
+                1.5 pop - as *+
+            3. 괄호 앞에 있을 경우: (ex. A-(B+C) >>> A+(-1)*(B+C) >>> A-1BC+*+)
+            >>> 1은 i=0이거나 charat(i-1)이 연산자인 경우 // 2, 3은 charat(i-1) 피연산자인 경우
+        *, /
+            1. push: 발견 즉시
+            2. pop: 토큰이 +, -일 경우 && 수식이 끝났을 경우
+        (
+            1. push: 발견 즉시
+            2. delete: ) 발견 즉시 + ( 위에 있던 모든 연산자들을 pop 한 후
+        )
+            스택에 절대 들어가지 않음
+ */
 
 public class DS_ch05 {
 
+    static void general_infix_to_postfix(String infix) {
+
+        Link_Stack ops = new Link_Stack();
+
+        for (int i = 0; i < infix.length(); i++) {
+            char token = infix.charAt(i);
+
+            switch (token) {
+                case '*': case '/': case '(': case '^': case '|': case '!':
+                    ops.push(token);
+                    break;
+                case '+':
+                    if (ops.isEmpty()) {
+                        ops.push(token);
+                    }
+                    else {
+                        while (!ops.isEmpty() && (ops.peek().equals('*') || ops.peek().equals('/'))) {
+                            System.out.print(ops.pop());
+                        }
+                        ops.push(token);
+                    }
+                    break;
+                case '-':
+                    ops.push('*');
+                    System.out.print("-1");
+                    if (
+                        (i != 0) &&
+                        (
+                            (infix.charAt(i-1) != '+') &&
+                            (infix.charAt(i-1) != '*') &&
+                            (infix.charAt(i-1) != '/')
+                        )
+                    ) {
+                        ops.delete();
+                        ops.push('+');
+                        ops.push('*');
+                    }
+                    break;
+                case ')':
+                    while (!ops.peek().equals('(')) {
+                        System.out.print(ops.pop());
+                    }
+                    ops.delete();
+                    if (ops.isEmpty()) break;
+                    if (ops.peek().equals('!')) {
+                        System.out.print(ops.pop());
+                    }
+                    break;
+                default:
+                    System.out.print(token);
+                    if (!ops.isEmpty() && ((ops.peek().equals('^')) || (ops.peek().equals('|')))) {
+                        System.out.print(ops.pop());
+                    }
+                    break;
+            }
+        }
+        while (!ops.isEmpty()) {
+            System.out.print(ops.pop());
+        }
+        System.out.println();
+    }
+
     public static void main(String[] args) {
-
-        LR_Stack lr1 = new LR_Stack(5);
-        lr1.push("Zydeco", 0);
-        lr1.push("Matt", 0);
-        lr1.push("Amber", 1);
-        lr1.push("Bengal", 1);
-
-        System.out.println(lr1);
-
-        lr1.push("Zydeco", 0);
-
+        general_infix_to_postfix("A^B|C|!E");
     }
 
 }
