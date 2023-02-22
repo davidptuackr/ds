@@ -316,6 +316,37 @@ class DLN_Stack implements Stack {
             스택에 절대 들어가지 않음
  */
 
+/*
+05.8 전위 표기식
+    규칙
+        첫 연산자는 일단 내버려둔다. 일단 스택 안에 저장한다고 하자
+        /, *가 top이면 어떤 연산자도 스택에 push할 수 있다
+        3. +, -가 top이면 그 뒤론 +, -, 괄호쌍만 들어올 수 있다
+        4. 여는 괄호가 들어오면 3은 무효화된다
+        5. 닫힌 괄호가 들어오면 4는 무효화된다
+
+    연산 우선순위가 높을 수록 전위 표기식에서 나중에 나오고, 낮을 수록 앞에 나온다
+    여는 괄호가 나오면 연산 우선순위를 높인다
+    닫힌 괄호가 나오면 연산 우선순위를 낮춘다
+
+    구성 요소를 넣는 것은 앞뒤에서 동시에 할 수 있지만
+    출력하는 것은 맨 앞에서부터 하도록?
+
+    아니면
+    연산자를 넣는 것을 앞뒤에서 하고, 피연산자는 순서대로 넣어둔 뒤
+    우선순위가 바뀔 때마다 출력을 다르게 하도록?
+
+    위에꺼 다 헛짓거리다
+    주어진 식을 뒤에서부터 하면 된다
+    자세히 말하자면
+        연산자
+            1. 스택에 출입하는 동작은 후위 표기와 같다
+            2. 차이라면 후위 표기의 (, ) 역할이 전위 표기에선 서로 반대라는 점이다
+            3. pop할 때 후위 표기처럼 그대로 출력하는 것이 아닌, 전위 표기식을 저장한 스택에 push한다
+        피연산자
+            1. 피연산자를 만나면 전체 전위 표기식을 저장할 스택에 넣어둔다
+ */
+
 public class DS_ch05 {
 
     static void general_infix_to_postfix(String infix) {
@@ -380,8 +411,79 @@ public class DS_ch05 {
         System.out.println();
     }
 
+    static void infix_to_prefix(String infix) {
+
+        Link_Stack ops = new Link_Stack();
+        Link_Stack prefix = new Link_Stack();
+
+        for (int i = infix.length()-1; i >= 0; i--) {
+
+            char token = infix.charAt(i);
+
+            switch (token) {
+                case '*': case '/': case ')':
+                case '^': case '|': case '!':
+                case '>': case '<':
+                    ops.push(token);
+                    break;
+                case '+':
+                    if (ops.isEmpty()) {
+                        ops.push(token);
+                    }
+                    else {
+                        while (!ops.isEmpty() && (ops.peek().equals('*') || ops.peek().equals('/'))) {
+                            prefix.push(ops.pop());
+                        }
+                        ops.push(token);
+                    }
+                    break;
+                case '-':
+                    ops.push('*');
+                    prefix.push("-1");
+                    if (
+                        (i != 0) && (
+                        (infix.charAt(i-1) != '+') &&
+                        (infix.charAt(i-1) != '*') &&
+                        (infix.charAt(i-1) != '/')
+                        )
+                    ) {
+                        ops.delete();
+                        ops.push('+');
+                        ops.push('*');
+                    }
+                    break;
+                case '(':
+                    while (!ops.peek().equals(')')) {
+                        prefix.push(ops.pop());
+                    }
+                    ops.delete();
+                    if (!ops.isEmpty() && ops.peek().equals('!')) {
+                        prefix.push(ops.pop());
+                    }
+                    break;
+                default:
+                    prefix.push(token);
+                    if (
+                        (!ops.isEmpty()) && (
+                        (ops.peek().equals('^')) ||
+                        (ops.peek().equals('|')) ||
+                        (ops.peek().equals('>')) ||
+                        (ops.peek().equals('<'))
+                        )
+                    ) {
+                        prefix.push(ops.pop());
+                    }
+                    break;
+            }
+        }
+        while (!ops.isEmpty()) prefix.push(ops.pop());
+        while (!prefix.isEmpty()) System.out.print(prefix.pop());
+    }
+
     public static void main(String[] args) {
-        general_infix_to_postfix("A^B|C|!E");
+
+        infix_to_prefix("A/B-C+D*E-A*C");
+
     }
 
 }
