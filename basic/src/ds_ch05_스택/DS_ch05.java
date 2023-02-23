@@ -1,5 +1,7 @@
 package ds_ch05_스택;
 
+import java.util.Scanner;
+
 interface Stack {
 
     boolean isEmpty();
@@ -347,9 +349,36 @@ class DLN_Stack implements Stack {
             1. 피연산자를 만나면 전체 전위 표기식을 저장할 스택에 넣어둔다
  */
 
-public class DS_ch05 {
+/*
+05.17 후위 표기식 계산 (단, 연산자는 +-*\/만 사용한다)
 
-    static void general_infix_to_postfix(String infix) {
+    과정
+        1. 사용자로부터 중위 표기식을 입력받는다
+        2. 입력받은 중위 표기식을 후위 표기식으로 바꾼다
+        3. 후위 표기식을 점검하면서 계산을 진행한다. 방법은 다음과 같다.
+            3.1 피연산자를 만나면 사용자로부터 숫자 입력을 받는다
+            3.2 입력받은 숫자를 스택에 저장한다
+            3.3 연산자를 만나면 스택에서 숫자 두 개를 pop해서 계산한다 (비정상적으로 변환되면 오류 발생 >>> 꺼낼 숫자가 없는 경우)
+            3.4 중간 계산 결과는 다시 스택에 push한다
+            3.5 계산 마지막에 최종 결과를 pop한다
+ */
+
+public class DS_ch05 {
+    
+    static int get_ps(char op) {
+        
+        int ps = 0;
+        
+        switch (op) {
+            case '(': ps = 0;
+            case '+': case '-': ps = 1;
+            case '*': case '/': ps = 2;
+        }
+        
+        return ps;
+    }
+
+    /*static void general_infix_to_postfix(String infix) {
 
         Link_Stack ops = new Link_Stack();
 
@@ -409,6 +438,48 @@ public class DS_ch05 {
             System.out.print(ops.pop());
         }
         System.out.println();
+    }*/
+
+    static String general_infix_to_postfix(String infix) {
+
+        Link_Stack ops = new Link_Stack();
+
+        StringBuilder postfix = new StringBuilder();
+
+        for (int i = 0; i < infix.length(); i++) {
+            char token = infix.charAt(i);
+
+            switch (token) {
+                case '*': case '/': case '(':
+                    ops.push(token);
+                    break;
+                case '+': case '-':
+                    if (ops.isEmpty()) {
+                        ops.push(token);
+                    }
+                    else {
+                        while (!ops.isEmpty() && (get_ps((char) ops.peek()) <= get_ps(token))) {
+                            postfix.append(ops.pop());
+                        }
+                        ops.push(token);
+                    }
+                    break;
+                case ')':
+                    while (!ops.peek().equals('(')) {
+                        postfix.append(ops.pop());
+                    }
+                    ops.delete();
+                default:
+                    postfix.append(token);
+                    break;
+            }
+        }
+
+        while (!ops.isEmpty()) {
+            postfix.append(ops.pop());
+        }
+
+        return postfix.toString();
     }
 
     static void infix_to_prefix(String infix) {
@@ -438,8 +509,8 @@ public class DS_ch05 {
                     }
                     break;
                 case '-':
-                    ops.push('*');
                     prefix.push("-1");
+                    prefix.push('*');
                     if (
                         (i != 0) && (
                         (infix.charAt(i-1) != '+') &&
@@ -447,9 +518,10 @@ public class DS_ch05 {
                         (infix.charAt(i-1) != '/')
                         )
                     ) {
-                        ops.delete();
+                        if (!ops.isEmpty() && (ops.peek().equals('*') || ops.peek().equals('/'))) {
+                            prefix.push(ops.pop());
+                        }
                         ops.push('+');
-                        ops.push('*');
                     }
                     break;
                 case '(':
@@ -480,10 +552,44 @@ public class DS_ch05 {
         while (!prefix.isEmpty()) System.out.print(prefix.pop());
     }
 
+    static void calc_infix_using_postfix(String infix) {
+
+        String postfix = general_infix_to_postfix(infix);
+        Link_Stack ops = new Link_Stack();
+        Scanner sc = new Scanner(System.in);
+
+        for (int i = 0; i < postfix.length(); i++) {
+            char token = postfix.charAt(i);
+            if (token != '+' && token != '-' && token != '*' && token != '/') {
+                ops.push(sc.nextInt());
+            }
+            else {
+                int later = (int) ops.pop();
+                int earlier = (int) ops.pop();
+
+                switch (token) {
+                    case '+':
+                        ops.push(earlier + later);
+                        break;
+                    case '-':
+                        ops.push(earlier - later);
+                        break;
+                    case '*':
+                        ops.push(earlier * later);
+                        break;
+                    case '/':
+                        ops.push(earlier / later);
+                        break;
+                }
+            }
+        }
+        System.out.format("%s >>> %s >>> %d\n", infix, postfix, (int) ops.pop());
+    }
+
     public static void main(String[] args) {
 
-        infix_to_prefix("A/B-C+D*E-A*C");
-
+        Scanner sc = new Scanner(System.in);
+        calc_infix_using_postfix(sc.nextLine());
     }
 
 }
