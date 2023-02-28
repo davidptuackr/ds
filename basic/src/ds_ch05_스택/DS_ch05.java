@@ -1,5 +1,6 @@
 package ds_ch05_스택;
 
+import java.util.Random;
 import java.util.Scanner;
 
 interface Stack {
@@ -429,10 +430,30 @@ n-queens 구조
 
  */
 
+/*
+고민중인 문제
+
+022823 1614
+종료는 어떻게 할 것인가
+각 함수 스택의 q_left는 다를텐데 q_left==0일 때 종료한다는 것은 맨 마지막만 가능하지 않겠는가
+qs를 static 변수로 설정해볼까
+
+ */
+
 public class DS_ch05 {
 
     static int qs;
     static boolean[][] board;
+    static int[][] dirs = { // 시계 방향으로 조사
+            { 1, -2}, // 북동
+            { 2, -1}, // 동북
+            { 2,  1}, // 동남
+            { 1,  2}, // 남동
+            {-1,  2}, // 남서
+            {-2,  1}, // 서남
+            {-2, -1}, // 서북
+            {-1, -2}  // 북서
+    };
 
     static void n_queens() {
 
@@ -440,20 +461,122 @@ public class DS_ch05 {
         qs = sc.nextInt();
         board = new boolean[qs][qs];
 
-    }
+        Random rand = new Random();
+        int rand_x_start;
+        int rand_y_start;
 
-    static void search(int[] dir) {
+        /*rand_x_start = rand.nextInt(qs);
+        rand_y_start = rand.nextInt(qs);*/
 
-    }
+        rand_x_start = 0;
+        rand_y_start = 0;
 
-    static boolean is_available(int x_next, int y_next) {
+        /*
+        1.1 (좌측 + 1, 상단 + 2) >>> (-1, -2)
+        1.2 (좌측 + 1, 하단 + 2) >>> (-1, +2)
+        1.3 (좌측 + 2, 상단 + 1) >>> (-2, -1)
+        1.4 (좌측 + 2, 하단 + 1) >>> (-2, -1)
+        1.5 (우측 + 1, 상단 + 2) >>> (+1, -2)
+        1.6 (우측 + 1, 하단 + 2) >>> (+1, +2)
+        1.7 (우측 + 2, 상단 + 1) >>> (+2, -1)
+        1.8 (우측 + 2, 하단 + 1) >>> (+2, +1)
+         */
+
+        System.out.println("RANDOM START");
+        System.out.format("LOCATION: (%d, %d)\n", rand_x_start, rand_y_start);
+        board[rand_y_start][rand_x_start] = true;
+        qs--;
+        search(rand_x_start, rand_y_start, qs);
+
+        if (!board[rand_y_start][rand_x_start]) {
+            System.out.println("FAIL");
+        }
 
         for (int i = 0; i < board[0].length; i++) {
-            if (board[y_next][i]) return false;
+            for (int j = 0; j < board.length; j++) {
+                System.out.format("%5c", ((board[i][j]) ? 'Q' : '*'));
+            }
+            System.out.println();
         }
-        for (int i = 0; i < board.length; i++) {
-            if (board[i][x_next]) return false;
+
+    }
+
+    static void search(int current_xloc, int current_yloc, int qs_left) {
+
+        int dir_idx = 0;
+        int[] dir;
+        int x_next, y_next;
+
+        while (dir_idx < 8) {
+
+            // 마지막에 끝나면 바로 다음 코드로 인해 종료
+            if (qs == 0) {
+                System.out.format("X: %d, Y: %d\n", current_xloc, current_yloc);
+                return;
+            }
+
+            dir = dirs[dir_idx];
+            x_next = current_xloc + dir[0];
+            y_next = current_yloc + dir[1];
+
+            if (is_available(board, x_next, y_next)) {
+                board[y_next][x_next] = true;
+                qs--;
+                search(x_next, y_next, qs);
+            }
+
+            // 검사한 방향으론 불가능하거나, 앞서 갔던 곳으론 더이상 진행할 수 없을 경우 다른 방향을 검사한다
+            dir_idx++;
         }
+
+        // 위 루프를 빠져나왔다는 것은 다음에 갈 곳이 없다는 것 >>> 지금 있는 곳부터 지워나가기 + 남은 말 수 증가
+        board[current_yloc][current_xloc] = false;
+        qs++;
+
+    }
+
+    static boolean is_available(boolean[][] board, int x_next, int y_next) {
+
+        int x = x_next;
+        int y = y_next;
+        int n = board.length;
+        
+        // 배열 바깥을 벗어나지 않는지 먼저 검사
+        if (x < 0 || y < 0) return false;
+        if (x >= n || y >= n) return false;
+
+        // 해당 지점의 상하로 말이 있는지 검사
+        for (int i = 0; i < n; i++) {
+            if (board[y][i]) return false;
+        }
+        // 해당 지점의 좌우로 말이 있는지 검사
+        for (int i = 0; i < n; i++) {
+            if (board[i][x]) return false;
+        }
+        // 해당 지점의 대각선 방향으로 말이 있는지 검사
+        if (x > y) {
+            for (int i = 0; i < y+n-x; i++) {
+                if (board[i][x-y+i]) return false;
+                if ((x+y) > n) {
+                    if (board[x+y-n+i][n-i-1]) return false;
+                }
+                else {
+                    if (board[i][x+y-n+i]) return false;
+                }
+            }
+        }
+        else {
+            for (int i = 0; i < y+n-x; i++) {
+                if (board[i][y-x+i]) return false;
+                if ((x+y) > n) {
+                    if (board[x+y-n+i][n-i-1]) return false;
+                }
+                else {
+                    if (board[i][x+y-n+i]) return false;
+                }
+            }
+        }
+
         return true;
     }
 
@@ -680,8 +803,8 @@ public class DS_ch05 {
 
     public static void main(String[] args) {
 
-        Scanner sc = new Scanner(System.in);
-        calc_infix_using_postfix(sc.nextLine());
+        n_queens();
+
     }
 
 }
