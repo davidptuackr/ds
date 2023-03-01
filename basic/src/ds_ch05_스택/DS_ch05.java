@@ -554,26 +554,26 @@ public class DS_ch05 {
             if (board[i][x]) return false;
         }
         // 해당 지점의 대각선 방향으로 말이 있는지 검사
+
         if (x > y) {
-            for (int i = 0; i < y+n-x; i++) {
-                if (board[i][x-y+i]) return false;
-                if ((x+y) > n) {
-                    if (board[x+y-n+i][n-i-1]) return false;
+            if ((x+y) < n) {
+                int a = x-y;
+                int b = n-a;
+                for (int i = 0; i < n-a; i++) {
+                    if (board[i][a+i]) return false;
                 }
-                else {
-                    if (board[i][x+y-n+i]) return false;
-                }
+
+            }
+            else {
+
             }
         }
         else {
-            for (int i = 0; i < y+n-x; i++) {
-                if (board[i][y-x+i]) return false;
-                if ((x+y) > n) {
-                    if (board[x+y-n+i][n-i-1]) return false;
-                }
-                else {
-                    if (board[i][x+y-n+i]) return false;
-                }
+            if ((x+y) > n) {
+
+            }
+            else {
+
             }
         }
 
