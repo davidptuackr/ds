@@ -540,6 +540,9 @@ public class DS_ch05 {
         int x = x_next;
         int y = y_next;
         int n = board.length;
+        int a = Math.abs(x-y);
+        int b = Math.abs(x+y-(n-1));
+
         
         // 배열 바깥을 벗어나지 않는지 먼저 검사
         if (x < 0 || y < 0) return false;
@@ -555,27 +558,6 @@ public class DS_ch05 {
         }
         // 해당 지점의 대각선 방향으로 말이 있는지 검사
 
-        if (x > y) {
-            if ((x+y) < n) {
-                int a = x-y;
-                int b = n-a;
-                for (int i = 0; i < n-a; i++) {
-                    if (board[i][a+i]) return false;
-                }
-
-            }
-            else {
-
-            }
-        }
-        else {
-            if ((x+y) > n) {
-
-            }
-            else {
-
-            }
-        }
 
         return true;
     }
@@ -803,7 +785,9 @@ public class DS_ch05 {
 
     public static void main(String[] args) {
 
-        n_queens();
+        //n_queens();
+
+        // check 1 p
 
     }
 
