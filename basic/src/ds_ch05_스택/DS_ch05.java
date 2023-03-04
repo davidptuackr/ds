@@ -442,7 +442,7 @@ qs를 static 변수로 설정해볼까
 
 public class DS_ch05 {
 
-    static int qs;
+    /*static int qs;
     static boolean[][] board;
     static int[][] dirs = { // 시계 방향으로 조사
             { 1, -2}, // 북동
@@ -465,13 +465,13 @@ public class DS_ch05 {
         int rand_x_start;
         int rand_y_start;
 
-        /*rand_x_start = rand.nextInt(qs);
-        rand_y_start = rand.nextInt(qs);*/
+        *//*rand_x_start = rand.nextInt(qs);
+        rand_y_start = rand.nextInt(qs);*//*
 
         rand_x_start = 0;
         rand_y_start = 0;
 
-        /*
+        *//*
         1.1 (좌측 + 1, 상단 + 2) >>> (-1, -2)
         1.2 (좌측 + 1, 하단 + 2) >>> (-1, +2)
         1.3 (좌측 + 2, 상단 + 1) >>> (-2, -1)
@@ -480,7 +480,7 @@ public class DS_ch05 {
         1.6 (우측 + 1, 하단 + 2) >>> (+1, +2)
         1.7 (우측 + 2, 상단 + 1) >>> (+2, -1)
         1.8 (우측 + 2, 하단 + 1) >>> (+2, +1)
-         */
+         *//*
 
         System.out.println("RANDOM START");
         System.out.format("LOCATION: (%d, %d)\n", rand_x_start, rand_y_start);
@@ -543,7 +543,6 @@ public class DS_ch05 {
         int a = Math.abs(x-y);
         int b = Math.abs(x+y-(n-1));
 
-        
         // 배열 바깥을 벗어나지 않는지 먼저 검사
         if (x < 0 || y < 0) return false;
         if (x >= n || y >= n) return false;
@@ -557,10 +556,47 @@ public class DS_ch05 {
             if (board[i][x]) return false;
         }
         // 해당 지점의 대각선 방향으로 말이 있는지 검사
+        if (x > y) {
+            if ((x + y) < n) {
+                for (int i = 0; i < a; i++) {
+                    if (board[i][a + i]) return false;
+                }
+                for (int i = 0; i < n - b; i++) {
+                    if (board[n - b - i-1][i]) return false;
+                }
+            } else {
+                for (int i = 0; i < a; i++) {
+                    if (board[i][a + i]) return false;
+                }
+                for (int i = 0; i < n - b; i++) {
+                    if (board[n - i - 1][b + i]) return false;
+                }
+            }
+        }
+        else {
+            if ((x+y) > n) {
+                for (int i = 0; i < n-a; i++) {
+                    if (board[a+i][i]) return false;
+                }
+                for (int i = 0; i < n-b; i++) {
+                    if (board[n-i-1][b+i]) return false;
+                }
+            }
+            else {
+                for (int i = 0; i < n-a; i++) {
+                    if (board[a+i][i]) return false;
+                }
+                for (int i = 0; i < n-b; i++) {
+                    if (board[n-b-i-1][i]) return false;
+                }
+            }
+        }
 
 
         return true;
     }
+*/
+
 
     static int get_ps(char op) {
         
