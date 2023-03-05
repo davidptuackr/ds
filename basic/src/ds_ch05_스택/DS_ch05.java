@@ -1,6 +1,5 @@
 package ds_ch05_스택;
 
-import java.util.Random;
 import java.util.Scanner;
 
 interface Stack {
@@ -471,17 +470,6 @@ public class DS_ch05 {
         rand_x_start = 0;
         rand_y_start = 0;
 
-        *//*
-        1.1 (좌측 + 1, 상단 + 2) >>> (-1, -2)
-        1.2 (좌측 + 1, 하단 + 2) >>> (-1, +2)
-        1.3 (좌측 + 2, 상단 + 1) >>> (-2, -1)
-        1.4 (좌측 + 2, 하단 + 1) >>> (-2, -1)
-        1.5 (우측 + 1, 상단 + 2) >>> (+1, -2)
-        1.6 (우측 + 1, 하단 + 2) >>> (+1, +2)
-        1.7 (우측 + 2, 상단 + 1) >>> (+2, -1)
-        1.8 (우측 + 2, 하단 + 1) >>> (+2, +1)
-         *//*
-
         System.out.println("RANDOM START");
         System.out.format("LOCATION: (%d, %d)\n", rand_x_start, rand_y_start);
         board[rand_y_start][rand_x_start] = true;
@@ -817,6 +805,63 @@ public class DS_ch05 {
             }
         }
         System.out.format("%s >>> %s >>> %d\n", infix, postfix, (int) ops.pop());
+    }
+
+    /*
+    n queens 풀이
+
+    초기 세팅
+        qs: 남은 말 수
+        locs: 1차원 정수 배열
+            배열 인덱스: 열 위치
+            배열 값: 행 위치
+            ex. locs[3] = 5 >>> 3열 5행에 위치
+
+    위치 판별 방법
+        행: locs를 둘러보면서 같은 배열 값이 있는지 확인한다
+        열: 확인할 필요가 없다 >>> 인덱스가 곧 열 위치이기 때문
+        대각선
+            상승: locs를 둘러보면서 (배열 값 + 인덱스)가 같은지 확인한다
+            하강: locs를 둘러보면서 (배열 값 - 인덱스)의 절대값이 같은지 확인한다
+
+     */
+
+    static int qs;
+    static int[] locs;
+
+    static void n_queens() {
+
+        qs = 10;
+        locs = new int[qs];
+
+    }
+
+    static void search(int current_row, int current_col) {
+
+        if (qs == 0) {
+            System.out.format("X: %d, Y: %d\n", current_row, current_col);
+            return;
+        }
+
+        int dig_m, dig_p;
+
+        for (int i = 0; i < locs.length; i++) {
+
+            dig_m = Math.abs(locs[i] - i);
+            dig_p = locs[i] + i;
+
+            if (is_available()) {
+                qs--;
+                search(x_next, y_next, qs);
+            }
+        }
+        qs++;
+    }
+
+    static boolean is_available(int xloc, int yloc) {
+
+
+        return true;
     }
 
     public static void main(String[] args) {
