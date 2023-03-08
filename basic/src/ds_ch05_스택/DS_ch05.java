@@ -834,39 +834,50 @@ public class DS_ch05 {
         qs = 10;
         locs = new int[qs];
 
+        search(0);
+
+        for (int i = 0; i < locs.length; i++) {
+            System.out.format("ROW: %d, COL: %d\n", locs[i], i);
+        }
     }
 
-    static void search(int current_row, int current_col) {
-
-        if (qs == 0) {
-            System.out.format("X: %d, Y: %d\n", current_row, current_col);
-            return;
-        }
-
-        int dig_m, dig_p;
+    static void search(int col) {
 
         for (int i = 0; i < locs.length; i++) {
 
-            dig_m = Math.abs(locs[i] - i);
-            dig_p = locs[i] + i;
+            if (qs == 0) {
+                return;
+            }
 
-            if (is_available()) {
+            if (is_available(i, col)) {
                 qs--;
-                search(x_next, y_next, qs);
+                locs[col] = i;
+                search(col + 1);
             }
         }
+        if (qs == 0) {
+            return;
+        }
+
+        locs[col] = 0;
         qs++;
     }
 
-    static boolean is_available(int xloc, int yloc) {
+    static boolean is_available(int next_row, int next_col) {
 
+        for (int bef_col = 0; bef_col < next_col; bef_col++) {
+            int bef_row = locs[bef_col];
+            if (bef_row == next_row) return false;
+            if ((bef_row + bef_col) == (next_row + next_col)) return false;
+            if ((bef_row - bef_col) == (next_row - next_col)) return false;
+        }
 
         return true;
     }
 
     public static void main(String[] args) {
 
-        //n_queens();
+        n_queens();
 
         // check 1 p
 
