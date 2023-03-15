@@ -35,7 +35,15 @@
 
     원형 큐의 공간을 전부 쓰기 위해선 큐가 만원인지/비었는지 구분할 줄 알아야 한다
         원소 수를 따로 저장해두거나
-        front==rear일 때 front != null인지 확인하거나 (null이면 빈 큐, 아니면 만원인 큐)
+        큐의 동작이 다음과 같을 때 원형 큐가 꽉 찼는지 확인하는 방법
+            1.
+                enq: rear 변경 후 삽입, deq: 삭제 후 front 변경 (OO)
+                enq: 삽입 후 rear 변경, deq: 삭제 후 front 변경 (XO)
+                    >>> ((rear+1) % n == front)인지 확인 후 진행
+            2.
+                enq: rear 변경 후 삽입, deq: front 변경 후 삭제 (OX)
+                enq: 삽입 후 rear 변경, deq: front 변경 후 삭제 (XX)
+                    >>> (rear % n == front 면서 rear != null)인지 확인 후 진행
 
 큐의 연결 표현: 연결 리스트를 이용한 구현
     큐의 원소를 저장하기 위한 노드: (데이터, 링크)
