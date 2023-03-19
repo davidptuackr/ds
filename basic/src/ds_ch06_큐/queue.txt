@@ -38,10 +38,10 @@
         큐의 동작이 다음과 같을 때 원형 큐가 꽉 찼는지 확인하는 방법
             1.
                 enq: rear 변경 후 삽입, deq: 삭제 후 front 변경 (OO)
-                enq: 삽입 후 rear 변경, deq: 삭제 후 front 변경 (XO)
+                enq: rear 변경 후 삽입, deq: front 변경 후 삭제 (OX)
                     >>> ((rear+1) % n == front)인지 확인 후 진행
             2.
-                enq: rear 변경 후 삽입, deq: front 변경 후 삭제 (OX)
+                enq: 삽입 후 rear 변경, deq: 삭제 후 front 변경 (XO)
                 enq: 삽입 후 rear 변경, deq: front 변경 후 삭제 (XX)
                     >>> (rear % n == front 면서 rear != null)인지 확인 후 진행
 
