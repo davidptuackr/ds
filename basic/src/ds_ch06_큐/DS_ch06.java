@@ -92,6 +92,10 @@ class CircularQueue implements Queue {
         this.data = new Object[q_size];
     }
 
+    public CircularQueue() {
+
+    }
+
     @Override
     public boolean isEmpty() {
         return (rear == front) && (data[front] == null);
@@ -105,13 +109,20 @@ class CircularQueue implements Queue {
         }
         data[rear] = data_enq;
         rear = (rear+1) % data.length;
+        System.out.format("EN_QUEUE %s\n", data_enq.toString());
     }
 
     @Override
     public Object deq() {
+        if (isEmpty()) {
+            System.out.println("EMPTY QUEUE");
+            return null;
+        }
+
         Object data_deq = data[front];
         data[front] = null;
         front = (front+1) % data.length;
+        System.out.format("DE_QUEUE %s\n", data_deq.toString());
         return data_deq;
     }
 
@@ -121,13 +132,134 @@ class CircularQueue implements Queue {
     
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        
-        for (int i = 0; ((front + i) % data.length) != rear; i++) {
+        sb.append("{ ");
+
+        int i = 0;
+
+        do {
             int loc = (front+i) % data.length;
-            sb.append(String.format("CQ[%d]: %s\n", i, data[loc]));
-        }
-        
+            sb.append(String.format("%s", data[loc]));
+            i++;
+            if (((front + i) % data.length) != rear) sb.append(", ");
+            else sb.append(" }\n");
+        } while (((front + i) % data.length) != rear);
+
         return sb.toString();
+    }
+}
+
+class MultiQueue implements Queue{
+
+    CircularQueue[] qs;
+
+    public MultiQueue(int n_qs, int q_size) {
+        qs = new CircularQueue[n_qs];
+        for (int i = 0; i < n_qs; i++) {
+            qs[i] = new CircularQueue(q_size);
+        }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        for (int i = 0; i < qs.length; i++) {
+            if (!is_q_n_empty(i)) return false;
+        }
+        return true;
+    }
+
+    public boolean is_q_n_empty(int q_number) {
+        return qs[q_number].isEmpty();
+    }
+
+    @Override
+    public void enq(Object data) {
+        qs[0].enq(data);
+    }
+
+    public void enq(Object data, int q_number) {
+        qs[q_number].enq(data);
+    }
+
+    @Override
+    public Object deq() {
+        return qs[0].deq();
+    }
+
+    public Object deq(int q_number) {
+        return qs[q_number].deq();
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("QUEUE STATUS\n");
+        for (int i = 0; i < qs.length; i++) {
+            sb.append(String.format("\tQUEUE[%d]: %s", i, qs[i]));
+        }
+        return sb.toString();
+    }
+}
+
+class Link_PQ extends LinkQueue {
+
+    P_Node front;
+    P_Node rear;
+
+    class P_Node {
+        int order;
+        Object data;
+        P_Node link;
+
+        public P_Node(Object data) {
+            this.order = rear.order + 1;
+            this.data = data;
+            this.link = null;
+        }
+
+        public P_Node(int order, Object data) {
+            this.order = order;
+            this.data = data;
+            this.link = null;
+        }
+
+        public P_Node(int order, Object data, P_Node link) {
+            this.order = order;
+            this.data = data;
+            this.link = link;
+        }
+    }
+
+    @Override
+    public void enq(Object data) {
+        if (isEmpty()) {
+            front = new P_Node(data);
+            rear = front;
+            return;
+        }
+        rear.link = new P_Node(data);
+        rear = rear.link;
+    }
+
+    public void enq(Object data, int order) {
+        if (isEmpty()) {
+            front = new P_Node(data);
+            rear = front;
+            return;
+        }
+        P_Node p = front;
+        P_Node q = front;
+        while ((p != null) && (p.order < order)) {
+            q = p;
+            p = p.link;
+        }
+        q.link = new P_Node(order, data, p);
+    }
+
+    @Override
+    public Object deq() {
+        Object data = front.data;
+        front = front.link;
+        if (front == null) rear = null;
+        return data;
     }
 }
 
@@ -169,11 +301,52 @@ public class DS_ch06 {
         System.out.println(cq + "IN QUEUE");
     }
 
+    static void mq_test() {
+        MultiQueue mq = new MultiQueue(4, 3);
+
+        System.out.println("ISEMPTY TEST");
+        mq.enq("Alpha");
+        mq.enq("Beta", 0);
+        mq.enq("Gamma");
+        mq.enq("Omega", 0);
+
+        System.out.println(mq.qs[0]);
+
+        System.out.println("DEQUEUE TEST");
+        mq.deq(); mq.deq(0); mq.deq(1);
+
+        System.out.println(mq.qs[0]);
+
+        System.out.println("ENQUEUE TEST");
+        mq.enq("Classification", 2);
+        mq.enq("Neighbor", 2);
+        mq.enq("Boost", 3);
+        mq.enq("Forest", 3);
+        mq.enq("Gradient", 1);
+        mq.enq("Regression", 1);
+
+        System.out.println(mq);
+    }
+
+    static void link_pq_test() {
+        Link_PQ pq = new Link_PQ();
+
+        System.out.println("IS EMPTY? >>> " + pq.isEmpty());
+
+        System.out.println("ENQ TEST");
+        pq.enq("Red");
+        pq.enq("White", 44);
+        pq.enq("Rose", 27);
+
+
+    }
+
     public static void main(String[] args) {
 
         //lq_test();
-        cq_test();
-
+        //cq_test();
+        //mq_test();
+        link_pq_test();
     }
 
 }
