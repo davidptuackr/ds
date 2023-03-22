@@ -210,7 +210,8 @@ class Link_PQ extends LinkQueue {
         P_Node link;
 
         public P_Node(Object data) {
-            this.order = rear.order + 1;
+            if (rear == null) this.order = 1;
+            else this.order = rear.order + 1;
             this.data = data;
             this.link = null;
         }
@@ -226,6 +227,11 @@ class Link_PQ extends LinkQueue {
             this.data = data;
             this.link = link;
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.front == null && this.rear == null;
     }
 
     @Override
@@ -252,6 +258,7 @@ class Link_PQ extends LinkQueue {
             p = p.link;
         }
         q.link = new P_Node(order, data, p);
+        while (rear.link != null) rear = rear.link;
     }
 
     @Override
@@ -260,6 +267,22 @@ class Link_PQ extends LinkQueue {
         front = front.link;
         if (front == null) rear = null;
         return data;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("QUEUE STATUS { ");
+
+        P_Node p = front;
+
+        while (p.link != null) {
+            sb.append(String.format("(%s, %d), ", p.data, p.order));
+            p = p.link;
+        }
+        sb.append(String.format("(%s, %d) }", p.data, p.order));
+
+        return sb.toString();
     }
 }
 
@@ -337,8 +360,9 @@ public class DS_ch06 {
         pq.enq("Red");
         pq.enq("White", 44);
         pq.enq("Rose", 27);
+        pq.enq("Scotch");
 
-
+        System.out.println(pq);
     }
 
     public static void main(String[] args) {
