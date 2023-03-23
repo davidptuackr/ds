@@ -19,6 +19,8 @@ package ds_ch06_큐;
     6. 06.15: 두 개의 스택을 이용한 큐 구현
  */
 
+import java.util.Arrays;
+
 interface Queue {
     boolean isEmpty();
     void enq(Object data);
@@ -37,6 +39,10 @@ class LinkQueue implements Queue {
         public Node(Object data) {
             this.data = data;
             this.link = null;
+        }
+
+        public Node() {
+
         }
     }
 
@@ -204,25 +210,21 @@ class Link_PQ extends LinkQueue {
     P_Node front;
     P_Node rear;
 
-    class P_Node {
+    class P_Node extends Node {
         int order;
-        Object data;
-        P_Node link;
 
         public P_Node(Object data) {
-            if (rear == null) this.order = 1;
-            else this.order = rear.order + 1;
-            this.data = data;
-            this.link = null;
+            super(data);
+            this.order = (rear == null) ? 1 : rear.order + 1;
         }
 
         public P_Node(int order, Object data) {
+            super(data);
             this.order = order;
-            this.data = data;
-            this.link = null;
         }
 
         public P_Node(int order, Object data, P_Node link) {
+            super();
             this.order = order;
             this.data = data;
             this.link = link;
@@ -242,7 +244,7 @@ class Link_PQ extends LinkQueue {
             return;
         }
         rear.link = new P_Node(data);
-        rear = rear.link;
+        rear = (P_Node) rear.link;
     }
 
     public void enq(Object data, int order) {
@@ -255,16 +257,16 @@ class Link_PQ extends LinkQueue {
         P_Node q = front;
         while ((p != null) && (p.order < order)) {
             q = p;
-            p = p.link;
+            p = (P_Node) p.link;
         }
         q.link = new P_Node(order, data, p);
-        while (rear.link != null) rear = rear.link;
+        while (rear.link != null) rear = (P_Node) rear.link;
     }
 
     @Override
     public Object deq() {
         Object data = front.data;
-        front = front.link;
+        front = (P_Node) front.link;
         if (front == null) rear = null;
         return data;
     }
@@ -278,9 +280,106 @@ class Link_PQ extends LinkQueue {
 
         while (p.link != null) {
             sb.append(String.format("(%s, %d), ", p.data, p.order));
-            p = p.link;
+            p = (P_Node) p.link;
         }
         sb.append(String.format("(%s, %d) }", p.data, p.order));
+
+        return sb.toString();
+    }
+}
+
+class List_PQ extends CircularQueue {
+
+    /*
+    무정렬 배열에서의 front, rear
+        front: 삭제할 원소의 위치를 가리킨다 >>> 우선순위가 가장 높은 원소를 가리키는 숫자
+        rear: 삽입할 위치를 가리킨다 >>> 우선순위에 상관 없이 빈 칸을 가리킨다
+
+    무정렬 배열에서의 isEmpty가 true일 조건: (rear == front) && (data[front] == null) (CQ와 동일함)
+
+    enq(data)
+        1. rear 위치에 삽입
+        2. 이 때 순위는 최후순위로 간주 >>> 빈 상태였다면 1, 아니면 orders.min+1
+        3. front 갱신 불필요 >>> 어차피 위에서 front를 갱신할 정도의 우선순위가 아니란 것을 알았기 때문
+        4. orders는 갱신
+        5. rear 갱신: 다른 빈 칸 탐색. 만약 없다면 data.length로 설정
+
+    enq(data, order)
+        1. rear 위치에 삽입
+        2. front 갱신: 새로 온 원소의 우선순위가 기존 front보다 높다면 변경, 아니면 pass
+        3. orders 갱신
+        4. rear 갱신
+
+    deq
+        front 위치의 원소 deq
+        front 위치의 orders 제거 >>> 무한으로 설정
+        만원 큐였다면 rear 갱신: data.length >>> front
+        front 갱신: 다음으로 우선순위가 높은 원소로 지정
+
+     */
+
+    int[] orders;
+
+    public List_PQ(int q_size) {
+        super(q_size);
+        orders = new int[q_size];
+        Arrays.fill(orders, (int) Double.POSITIVE_INFINITY);
+    }
+
+    @Override
+    public void enq(Object data_enq) {
+        if (isEmpty()) {
+            orders[rear] = 1;
+        }
+         //= (isEmpty()) ? 1 : Arrays.stream(orders).max().getAsInt() + 1;
+        data[rear] = data_enq;
+
+        int i;
+        for (i = rear+1; (i != rear) && (data[i] != null); i = (i+1) % data.length) { }
+        rear = (data[i] == null) ? i : data.length;
+    }
+
+    public void enq(Object data_enq, int order) {
+        data[rear] = data_enq;
+        orders[rear] = order;
+
+        front = (orders[front] > order) ? orders[rear] : orders[front];
+
+        int i = rear + 1;
+        while ((i != rear) && (data[i] != null)) {
+            i = (i + 1) % data.length;
+        }
+        rear = (data[i] == null) ? i : data.length;
+    }
+
+    @Override
+    public Object deq() {
+        Object data_deq = data[front];
+        data[front] = null;
+        orders[front] = (int) Double.POSITIVE_INFINITY;
+
+        if (rear == data.length) rear = front;
+
+        front = Arrays.stream(orders).min().getAsInt();
+
+        return data_deq;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("QUEUE STATUS: { ");
+
+        int i = 0;
+
+        while ((i < data.length) && (data[i] != null)) {
+            sb.append(String.format("(%s, %d), ", data[i], orders[i]));
+            i++;
+        }
+        sb.delete(sb.length()-2, sb.length()-1);
+        sb.append("}\n");
+        sb.append(String.format("PRIOR: (%s, %d)\n", data[front], orders[front]));
 
         return sb.toString();
     }
@@ -365,12 +464,26 @@ public class DS_ch06 {
         System.out.println(pq);
     }
 
+    static void list_pq_test() {
+        List_PQ pq = new List_PQ(5);
+
+        System.out.println(pq.isEmpty());
+
+        pq.enq("Ro");
+        pq.enq("Sigma");
+        pq.enq("Tau", 26);
+        pq.enq("Ipsilon", 23);
+
+        System.out.println(pq);
+    }
+
     public static void main(String[] args) {
 
         //lq_test();
         //cq_test();
         //mq_test();
-        link_pq_test();
+        //link_pq_test();
+        list_pq_test();
     }
 
 }
