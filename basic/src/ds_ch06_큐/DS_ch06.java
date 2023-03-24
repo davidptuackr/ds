@@ -323,7 +323,7 @@ class List_PQ extends CircularQueue {
     public List_PQ(int q_size) {
         super(q_size);
         orders = new int[q_size];
-        Arrays.fill(orders, (int) Double.POSITIVE_INFINITY);
+        Arrays.fill(orders, (int) Double.NEGATIVE_INFINITY);
     }
 
     @Override
@@ -331,11 +331,21 @@ class List_PQ extends CircularQueue {
         if (isEmpty()) {
             orders[rear] = 1;
         }
-         //= (isEmpty()) ? 1 : Arrays.stream(orders).max().getAsInt() + 1;
+        else {
+            int subo = orders[0];
+            for (int i = 0; i < orders.length; i++) {
+                if (orders[i] > subo) {
+                    subo = orders[i];
+                }
+            }
+            orders[rear] = subo + 1;
+        }
         data[rear] = data_enq;
 
-        int i;
-        for (i = rear+1; (i != rear) && (data[i] != null); i = (i+1) % data.length) { }
+        int i = (rear + 1) % data.length;;
+        while ((i != rear) && (data[i] != null)) {
+            i = (i + 1) % data.length;
+        }
         rear = (data[i] == null) ? i : data.length;
     }
 
@@ -343,9 +353,9 @@ class List_PQ extends CircularQueue {
         data[rear] = data_enq;
         orders[rear] = order;
 
-        front = (orders[front] > order) ? orders[rear] : orders[front];
+        front = (orders[front] > order) ?  rear : front;
 
-        int i = rear + 1;
+        int i = (rear + 1) % data.length;
         while ((i != rear) && (data[i] != null)) {
             i = (i + 1) % data.length;
         }
@@ -356,11 +366,19 @@ class List_PQ extends CircularQueue {
     public Object deq() {
         Object data_deq = data[front];
         data[front] = null;
-        orders[front] = (int) Double.POSITIVE_INFINITY;
+        orders[front] = (int) Double.NEGATIVE_INFINITY;
 
         if (rear == data.length) rear = front;
 
-        front = Arrays.stream(orders).min().getAsInt();
+        while (orders[front] == (int) Double.NEGATIVE_INFINITY) {
+            front = (front + 1) % orders.length;
+        }
+
+        for (int i = front + 1; i != front; i = (i + 1) % orders.length) {
+            if ((orders[i] < orders[front]) && (orders[i] != (int) Double.NEGATIVE_INFINITY)) {
+                front = i;
+            }
+        }
 
         return data_deq;
     }
@@ -371,12 +389,11 @@ class List_PQ extends CircularQueue {
 
         sb.append("QUEUE STATUS: { ");
 
-        int i = 0;
 
-        while ((i < data.length) && (data[i] != null)) {
-            sb.append(String.format("(%s, %d), ", data[i], orders[i]));
-            i++;
+        for (int i = 0; i < data.length; i++) {
+            if (data[i] != null) sb.append(String.format("(%s, %d), ", data[i], orders[i]));
         }
+
         sb.delete(sb.length()-2, sb.length()-1);
         sb.append("}\n");
         sb.append(String.format("PRIOR: (%s, %d)\n", data[front], orders[front]));
@@ -469,10 +486,16 @@ public class DS_ch06 {
 
         System.out.println(pq.isEmpty());
 
-        pq.enq("Ro");
+        pq.enq("Ro", 7);
         pq.enq("Sigma");
         pq.enq("Tau", 26);
         pq.enq("Ipsilon", 23);
+        pq.enq("SENIOR", 1);
+
+        System.out.println(pq);
+
+        pq.deq();
+        pq.deq();
 
         System.out.println(pq);
     }
