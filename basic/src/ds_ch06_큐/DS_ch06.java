@@ -10,6 +10,11 @@ package ds_ch06_큐;
         4.1 정렬된 연결 리스트 이용
         4.2 무정렬 배열 이용
         4.3 재귀 형태로 삽입, 삭제 구현
+            >>> (032523 1450)
+             삽입은 의미가 없고(어차피 바로 되기 때문)
+             삭제는 할 수 있긴 하지만 복잡해진다
+                방법 1. 전체 열 검사, 그 다음 부분 열 검사, ...
+                방법 2. 아예 정렬된 배열로 만든 다음 재귀적으로 탐색 >>> 이게 더 좋겠지만 그러면 무정렬이 아니니까...
     5. 다중 우선 큐 구현
         5.1 각 큐는 우선 순위가 다르다
         5.2 각 큐에 있는 원소는 큐 내에서 우선 순위가 다르다
@@ -163,6 +168,10 @@ class MultiQueue implements Queue{
         for (int i = 0; i < n_qs; i++) {
             qs[i] = new CircularQueue(q_size);
         }
+    }
+
+    public MultiQueue() {
+
     }
 
     @Override
@@ -394,9 +403,62 @@ class List_PQ extends CircularQueue {
             if (data[i] != null) sb.append(String.format("(%s, %d), ", data[i], orders[i]));
         }
 
-        sb.delete(sb.length()-2, sb.length()-1);
+        if (!isEmpty()) {
+            sb.delete(sb.length()-2, sb.length()-1);
+        }
         sb.append("}\n");
-        sb.append(String.format("PRIOR: (%s, %d)\n", data[front], orders[front]));
+
+        if (!isEmpty()) {
+            sb.append(String.format("PRIOR: (%s, %d)\n", data[front], orders[front]));
+        }
+
+        return sb.toString();
+    }
+}
+
+class Multi_List_PQ extends MultiQueue {
+
+    List_PQ[] qs;
+    int fq;
+
+    public Multi_List_PQ(int n_qs, int q_size) {
+        super(n_qs, q_size);
+        qs = new List_PQ[n_qs];
+        for (int i = 0; i < n_qs; i++) {
+            qs[i] = new List_PQ(q_size);
+        }
+        fq = 0;
+    }
+
+    @Override
+    public void enq(Object data) {
+        qs[0].enq(data);
+        fq = 0;
+    }
+
+    public void enq(Object data, int data_order) {
+        qs[0].enq(data, data_order);
+        fq = 0;
+    }
+
+    public void enq(Object data, int q_order, int data_order) {
+        qs[q_order].enq(data, data_order);
+        for (int i = 0; i < q_order; i++) {
+            if (qs[i].isEmpty()) return;
+        }
+        fq = q_order;
+    }
+
+    public Object deq() {
+        return qs[fq].deq();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < qs.length; i++) {
+            sb.append(String.format("QUEUE[%d]: %s\n", i, qs[i].toString()));
+        }
 
         return sb.toString();
     }
@@ -500,13 +562,28 @@ public class DS_ch06 {
         System.out.println(pq);
     }
 
+    static void multi_list_pq_test() {
+        Multi_List_PQ pq = new Multi_List_PQ(3, 3);
+
+        System.out.println(pq.isEmpty());
+
+        pq.enq("Alpha", 9);
+        pq.enq("Beta", 4);
+        pq.enq("Xi", 0, 5);
+
+        pq.enq("Ro", 2, 8);
+
+        System.out.println(pq);
+    }
+
     public static void main(String[] args) {
 
         //lq_test();
         //cq_test();
         //mq_test();
         //link_pq_test();
-        list_pq_test();
+        //list_pq_test();
+        multi_list_pq_test();
     }
 
 }
