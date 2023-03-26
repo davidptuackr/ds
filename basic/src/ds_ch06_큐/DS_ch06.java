@@ -1,5 +1,6 @@
 package ds_ch06_큐;
 
+
 /*
 풀이할 문제
     1. 06.1: 큐 구현: 연결 리스트 이용
@@ -24,7 +25,10 @@ package ds_ch06_큐;
     6. 06.15: 두 개의 스택을 이용한 큐 구현
  */
 
+import ds_ch05_스택.DS_ch05;
+
 import java.util.Arrays;
+import java.util.Stack;
 
 interface Queue {
     boolean isEmpty();
@@ -464,26 +468,52 @@ class Multi_List_PQ extends MultiQueue {
     }
 }
 
+class Double_Stack_Queue extends LinkQueue {
+
+    DE_Node front;
+    DE_Node rear;
+    int status; // 0: 삽입 모드 (top==rear), 1: 삭제 모드 (top==front)
+
+    class DE_Node extends Node{
+        DE_Node left;
+        DE_Node right;
+        
+        public DE_Node(Object data) {
+            super(data);
+            this.left = null;
+            this.right = null;
+        }
+        
+        public DE_Node(Object data, DE_Node left, DE_Node right) {
+            this.data = data;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    public Double_Stack_Queue() {
+        this.front = null;
+        this.rear = null;
+        this.status = 0;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.front == null && this.rear == null;
+    }
+
+    @Override
+    public void enq(Object data) {
+        if (isEmpty()) {
+            front = new DE_Node(data);
+            rear = front;
+        }
+    }
+}
+
 public class DS_ch06 {
 
-    static void lq_test() {
-        LinkQueue lq = new LinkQueue();
 
-        System.out.println("IS_EMPTY TEST");
-        lq.enq("QQQ");
-        lq.deq();
-        System.out.format("IS EMPTY? >>> %b\n", lq.isEmpty());
-
-        lq.enq("Zydeco");
-        lq.enq("Ensemble");
-        lq.enq("Gradient");
-        lq.enq("Spodumene");
-
-        System.out.format("DEQ: %s\n", lq.deq());
-
-        System.out.println(lq + "IN QUEUE");
-    }
-    
     static void cq_test() {
         CircularQueue cq = new CircularQueue(3);
 
