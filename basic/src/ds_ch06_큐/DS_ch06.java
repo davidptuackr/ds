@@ -470,8 +470,7 @@ class Multi_List_PQ extends MultiQueue {
 
 class Double_Stack_Queue extends LinkQueue {
 
-    DE_Node front;
-    DE_Node rear;
+    DE_Node top;
     int status; // 0: 삽입 모드 (top==rear), 1: 삭제 모드 (top==front)
 
     class DE_Node extends Node{
@@ -492,22 +491,69 @@ class Double_Stack_Queue extends LinkQueue {
     }
 
     public Double_Stack_Queue() {
-        this.front = null;
-        this.rear = null;
+        this.top = null;
         this.status = 0;
     }
 
     @Override
     public boolean isEmpty() {
-        return this.front == null && this.rear == null;
+        return top == null;
     }
 
     @Override
     public void enq(Object data) {
         if (isEmpty()) {
-            front = new DE_Node(data);
-            rear = front;
+            top = new DE_Node(data);
+            status = 0;
+            return;
         }
+
+        if (status == 1) {
+            while (top.right != null) {
+                top = top.right;
+            }
+            status = 0;
+        }
+
+        top.right = new DE_Node(data, top, null);
+        top = top.right;
+    }
+
+    public Object deq() {
+        if (isEmpty()) {
+            System.out.println("UNABLE TO DEQUEUE. QUEUE IS EMPTY");
+        }
+
+        if (status == 0) {
+            while (top.left != null) {
+                top = top.left;
+            }
+            status = 1;
+        }
+        Object data_deq = top.data;
+        top = top.right;
+        top.left = null;
+        return data_deq;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        DE_Node p = top;
+
+        sb.append(String.format("QUEUE STATUS: { "));
+        while (p != null) {
+            sb.append(String.format("%s, ", p.data));
+            p = (status == 0) ? p.left : p.right;
+        }
+
+        if (!isEmpty()) {
+            sb.delete(sb.length()-2, sb.length()-1);
+        }
+        sb.append("}\n");
+        sb.append(String.format("STATUS: %d, TOP: %s\n", status, top.data));
+
+        return sb.toString();
     }
 }
 
@@ -606,6 +652,20 @@ public class DS_ch06 {
         System.out.println(pq);
     }
 
+    static void ds_q_test() {
+        Double_Stack_Queue dsq = new Double_Stack_Queue();
+
+        System.out.format("IS EMPTY? >>> %b\n", dsq.isEmpty());
+        dsq.enq("Alpha");
+        dsq.enq("Beta");
+        dsq.enq("Gamma");
+
+        System.out.println(dsq);
+
+        dsq.deq();
+        System.out.println(dsq);
+    }
+
     public static void main(String[] args) {
 
         //lq_test();
@@ -613,7 +673,8 @@ public class DS_ch06 {
         //mq_test();
         //link_pq_test();
         //list_pq_test();
-        multi_list_pq_test();
+        //multi_list_pq_test();
+        ds_q_test();
     }
 
 }
