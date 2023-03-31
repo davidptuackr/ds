@@ -72,7 +72,7 @@ class List_Binary_Tree implements Binary_Tree {
         int p = 1;
 
         while (p != 0) {
-            if ((data[p] != null) && (!mark[p])) {
+            if (!mark[p]) {
                 cpy.data[p] = data[p];
                 mark[p] = true;
             }
@@ -113,7 +113,7 @@ class List_Binary_Tree implements Binary_Tree {
         int p = 1;
 
         while (p != 0) {
-            if ((data[p] != null) && (((List_Binary_Tree) t).data[p] != null) && (!mark[p])) {
+            if (!mark[p]) {
                 if (((List_Binary_Tree) t).data[p] != data[p]) {
                     return false;
                 }
@@ -145,29 +145,21 @@ class List_Binary_Tree implements Binary_Tree {
 
     @Override
     public void insert(Object data_in) {
-
         int loc = 1;
         while (data[loc] != null) {
             loc++;
         }
-
-        if (is_invalid(loc)) {
-            System.out.println("INVALID LOCATION");
-            return;
-        }
-        data[loc] = data_in;
+        if (loc >= data.length) System.out.println("INVALID LOCATION");
+        else data[loc] = data_in;
     }
     public void insert(Object data_in, int loc) {
-        if (!is_empty() && is_invalid(loc)) {
-            System.out.println("INVALID LOCATION");
-            return;
-        }
-        data[loc] = data_in;
+        if ((!is_empty()) && (
+                (loc >= data.length) ||
+                (loc <= 0) ||
+                (data[loc / 2] == null)
+        )) System.out.println("INVALID LOCATION");
+        else data[loc] = data_in;
     }
-    public boolean is_invalid(int loc) {
-        return (loc >= data.length) || (loc <= 0) || (data[loc / 2] == null);
-    }
-
     @Override
     public void delete(Object data_del) {
         /*
@@ -282,7 +274,7 @@ class List_Binary_Tree implements Binary_Tree {
         int p = 1;
 
         while (p != 0) {
-            if ((data[p] != null) && (!mark[p])) {
+            if (!mark[p]) {
                 System.out.print(data[p] + " ");
                 mark[p] = true;
             }
