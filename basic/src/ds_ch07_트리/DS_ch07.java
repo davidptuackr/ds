@@ -22,6 +22,8 @@ package ds_ch07_트리;
 
  */
 
+import java.util.Arrays;
+
 interface Binary_Tree {
 
     Binary_Tree copy();
@@ -69,10 +71,6 @@ class List_Binary_Tree implements Binary_Tree {
         boolean[] mark = new boolean[data.length];
         int p = 1;
 
-        cpy.data[p] = data[p];
-        mark[p] = true;
-        p *= 2;
-
         while (p != 0) {
             if ((data[p] != null) && (!mark[p])) {
                 cpy.data[p] = data[p];
@@ -107,33 +105,34 @@ class List_Binary_Tree implements Binary_Tree {
     public boolean is_equal(Binary_Tree t) {
 
         // 이것도 전위 순회 변형
-        List_Binary_Tree u = (List_Binary_Tree) t.copy();
-
-        if (is_empty()) {
+        if (this.is_empty() || t.is_empty()) {
             System.out.println("EMPTY TREE");
             return false;
         }
-
         boolean[] mark = new boolean[data.length];
         int p = 1;
 
-        if (u.data[p] == data[p]) {
-            return false;
-        }
-        mark[p] = true;
-        p *= 2;
-
         while (p != 0) {
-            if ((data[p] != null) && (u.data[p] != null) && (!mark[p])) {
-                if (u.data[p] == data[p]) {
+            if ((data[p] != null) && (((List_Binary_Tree) t).data[p] != null) && (!mark[p])) {
+                if (((List_Binary_Tree) t).data[p] != data[p]) {
                     return false;
                 }
                 mark[p] = true;
             }
-            if ((p*2 < data.length) && (data[p*2] != null) && (u.data[p*2] != null) && (!mark[p*2])) {
+            if (
+                    (p*2 < data.length) &&
+                    (data[p*2] != null) &&
+                    (((List_Binary_Tree) t).data[p*2] != null) &&
+                    (!mark[p*2])
+            ) {
                 p *= 2;
             }
-            else if ((p*2+1 < data.length) && (data[p*2+1] != null) && (u.data[p*2+1] != null) && (!mark[p*2+1])) {
+            else if (
+                    (p*2+1 < data.length) &&
+                    (data[p*2+1] != null) &&
+                    (((List_Binary_Tree) t).data[p*2+1] != null) &&
+                    (!mark[p*2+1])
+            ) {
                 p = p * 2 + 1;
             }
             else {
@@ -171,6 +170,79 @@ class List_Binary_Tree implements Binary_Tree {
 
     @Override
     public void delete(Object data_del) {
+        /*
+        CASE 1. 단말 노드의 경우
+            - 그냥 부모로부터의 연결만 끊어내면 된다
+        CASE 2. 서브트리의 차수가 1인 경우
+            - 자식을 가져다 채워넣으면 된다
+        CASE 3. 차수가 2 이상인 경우
+            - 단말 하나 가져와서 채우면 되나?
+
+        결론
+            1. 단말 노드는 부모로부터의 연결만 끊으면 된다
+            2. 그 외엔 리프 하나 가져와서 채워넣는 것으로 하자. 어차피 꼭 완전 이진 트리일 필요는 없다.
+            3. 채워 넣을 리프는 전위 순회했을 때 제일 먼저 만나는 것을 쓰자
+
+        과정
+            1. 트리를 전위 순회하면서 삭제 대상을 찾는다
+            2. 찾아낼 경우 다음과 같이 처리한다
+                2.1 위치가 리프인 경우
+                    - 지운다
+                2.2 위치가 리프가 아닐 경우
+                    - 전위 순회로 제일 끝에 있는 리프 노드 하나를 가져와서 덮어쓴다
+                    - 방금 썼던 리프 노드는 없앤다
+         */
+
+        if (is_empty()) {
+            System.out.println("EMPTY TREE");
+            return;
+        }
+
+        boolean[] mark = new boolean[data.length];
+        int p = 1, q = 1;
+
+        while ((p != 0)) {
+            // 어차피 is_empty로 검사했는데 여기 if에서 비었는지 검사할 필요가 있나?
+            if (data[p].equals(data_del) && (!mark[p])) { // 일치하는 곳 찾아내면
+                if ((p*2 > data.length) || (data[p*2] == null && data[p*2+1] == null)) {
+                    data[p] = null;
+                    break;
+                }
+                Arrays.fill(mark, false); // 찾아냈으니 초기화해도 괜찮겠지?
+
+                while ((q != 0) && (q*2 < data.length)) {
+                    mark[q] = true;
+                    if ((data[q*2] != null) && (!mark[q*2])) {
+                        q *= 2;
+                    }
+                    else if ((data[q*2+1] != null) && (!mark[q*2+1])) {
+                        q = q * 2 + 1;
+                    }
+                    else {
+                        q /= 2;
+                    }
+                }
+                data[p] = data[q];
+                data[q] = null;
+                break;
+            }
+            else {
+                mark[p] = true;
+            }
+            
+            if ((p*2 < data.length) && (data[p*2] != null) && (!mark[p*2])) {
+                p *= 2;
+            }
+            else if ((p*2+1 < data.length) && (data[p*2+1] != null) && (!mark[p*2+1])) {
+                p = p * 2 + 1;
+            }
+            else {
+                p /= 2;
+            }
+        }
+
+        if (p != 0) { System.out.println("REMOVE " + data_del); }
+        else { System.out.println("COULD NOT FIND " + data_del); }
     }
 
     @Override
@@ -208,10 +280,6 @@ class List_Binary_Tree implements Binary_Tree {
 
         boolean[] mark = new boolean[data.length];
         int p = 1;
-
-        System.out.print(data[p] + " ");
-        mark[p] = true;
-        p *= 2;
 
         while (p != 0) {
             if ((data[p] != null) && (!mark[p])) {
@@ -287,7 +355,17 @@ public class DS_ch07 {
     static void list_bt_test() {
         List_Binary_Tree bt = new List_Binary_Tree(3);
 
-        /*System.out.println(bt.is_empty());
+        bt.insert("Alpha", 1);
+        bt.insert("Sig", 2);
+        bt.insert("Nut", 3);
+        bt.insert("Z", 5);
+        bt.insert("Aki", 6);
+        bt.insert("Juan", 7);
+        bt.insert("Sq", 4);
+        bt.insert("Wood", 9);
+
+        /*
+        System.out.println(bt.is_empty());
 
         bt.insert("Alpha");
         bt.insert("Beta");
@@ -314,16 +392,16 @@ public class DS_ch07 {
         bt.pre_order();
          */
 
-        bt.insert("Alpha", 1);
-        bt.insert("Sig", 2);
-        bt.insert("Nut", 3);
-        bt.insert("Z", 5);
-        bt.insert("Aki", 6);
-        bt.insert("Juan", 7);
-        bt.insert("Sq", 4);
-        bt.insert("Wood", 9);
-
+        /*
         List_Binary_Tree cpy = (List_Binary_Tree) bt.copy();
+        System.out.println("IS EQUAL bt, cpy? >>> " + bt.is_equal(cpy));
+         */
+
+        bt.delete("Z");
+        bt.delete("Nut");
+        bt.delete("Os");
+        bt.pre_order();
+
     }
 
     public static void main(String[] a) {
