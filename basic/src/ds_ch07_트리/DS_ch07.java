@@ -52,6 +52,7 @@ interface Binary_Tree {
 class List_Binary_Tree implements Binary_Tree {
 
     Object[] data;
+    int cursor = 1;
 
     public List_Binary_Tree(int h) {
         data = new Object[(int) Math.pow(2, h + 1)];
@@ -243,11 +244,30 @@ class List_Binary_Tree implements Binary_Tree {
 
     @Override
     public void rec_in_order() {
-
+        
     }
 
     @Override
     public void rec_post_order() {
+
+    }
+
+    public void rec_pre_order(int cursor) {
+        if ((cursor == 0) || (cursor > data.length) || (data[cursor] == null)) {
+            return;
+        }
+
+        System.out.print(data[cursor] + " ");
+
+        rec_pre_order(cursor * 2);
+        rec_pre_order(cursor * 2 + 1);
+    }
+
+    public void rec_in_order(int cursor) {
+
+    }
+
+    public void rec_post_order(int cursor) {
 
     }
 
@@ -347,32 +367,18 @@ public class DS_ch07 {
     static void list_bt_test() {
         List_Binary_Tree bt = new List_Binary_Tree(3);
 
-        bt.insert("Alpha", 1);
-        bt.insert("Sig", 2);
-        bt.insert("Nut", 3);
-        bt.insert("Z", 5);
-        bt.insert("Aki", 6);
-        bt.insert("Juan", 7);
-        bt.insert("Sq", 4);
-        bt.insert("Wood", 9);
-
-        /*
         System.out.println(bt.is_empty());
 
-        bt.insert("Alpha");
-        bt.insert("Beta");
-        bt.insert("Gamma");
-        bt.insert("Delta");
-        bt.insert("Eps");
-        */
-
-        /*
         bt.insert("Alpha", 1);
         bt.insert("Sig", 2);
         bt.insert("Nut", 3);
         bt.insert("Z", 5);
         bt.insert("Aki", 6);
         bt.insert("Juan", 7);
+        bt.insert("Sq", 4);
+        bt.insert("Wood", 9);
+
+        System.out.println(bt.is_empty());
 
         bt.pre_order();
 
@@ -382,18 +388,23 @@ public class DS_ch07 {
         bt.insert("Wood", 9);
 
         bt.pre_order();
-         */
 
-        /*
         List_Binary_Tree cpy = (List_Binary_Tree) bt.copy();
+        List_Binary_Tree bt2 = new List_Binary_Tree(4);
+        bt2.insert("Alpha", 1);
+        bt2.insert("Sig", 2);
+        bt2.insert("Nut", 3);
+        bt2.insert("Quan", 5);
+
         System.out.println("IS EQUAL bt, cpy? >>> " + bt.is_equal(cpy));
-         */
+        System.out.println("IS EQUAL bt, cpy? >>> " + bt.is_equal(bt2));
 
         bt.delete("Z");
         bt.delete("Nut");
         bt.delete("Os");
         bt.pre_order();
 
+        bt.rec_pre_order(1);
     }
 
     public static void main(String[] a) {
