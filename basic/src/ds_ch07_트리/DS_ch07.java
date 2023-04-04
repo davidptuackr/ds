@@ -354,7 +354,49 @@ class List_Binary_Tree implements Binary_Tree {
 
     @Override
     public void post_order() {
+        if (is_empty()) {
+            System.out.println("EMPTY TREE");
+            return;
+        }
+        boolean[] mark = new boolean[data.length];
+        int p = 1;
+        /*
+        루트 방문 조건
+            p*2 > data.length거나 양쪽 서브트리 모두 null일 때 >>> 리프
+            양쪽 다 돌았을 때 >>> mark[p*2], [p*2+1] >>> true
+            한 쪽만 있는 경우: 한 쪽을 다 방문했을 때
+        좌/우 이동 조건: 방문하지 않았을 때
 
+         */
+        while (p != 0) {
+            if (p*2 >= data.length) {
+                System.out.print(data[p] + " ");
+                mark[p] = true;
+            }
+            else if ( (p*2 < data.length) && (data[p*2] == null) && (data[p*2+1] == null) ) {
+                System.out.print(data[p] + " ");
+                mark[p] = true;
+            }
+            else if (mark[p*2] && mark[p*2+1]) {
+                System.out.print(data[p] + " ");
+                mark[p] = true;
+            }
+            else if (((mark[p*2]) && (data[p*2+1] == null)) || ((data[p*2] == null) && (mark[p*2+1]))) {
+                System.out.print(data[p] + " ");
+                mark[p] = true;
+            }
+
+            if ((p*2 < data.length) && (data[p*2] != null) && (!mark[p*2])) {
+                p *= 2;
+            }
+            else if ((p*2+1 < data.length) && (data[p*2+1] != null) && (!mark[p*2+1])) {
+                p = p * 2 + 1;
+            }
+            else {
+                p /= 2;
+            }
+        }
+        System.out.println();
     }
 
     @Override
@@ -459,6 +501,7 @@ public class DS_ch07 {
         bt2.insert("G", 8);
         bt2.insert("H", 15);
         bt2.in_order();
+        bt2.post_order();
 
     }
 
