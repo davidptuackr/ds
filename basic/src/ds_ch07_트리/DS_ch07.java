@@ -22,7 +22,10 @@ package ds_ch07_트리;
 
  */
 
+import ds_ch05_스택.DS_ch05;
+
 import java.util.Arrays;
+import java.util.Stack;
 
 interface Binary_Tree {
 
@@ -240,25 +243,25 @@ class List_Binary_Tree implements Binary_Tree {
     @Override
     public void rec_pre_order() {
         rec_pre_order(1);
+        System.out.println();
     }
-
     @Override
     public void rec_in_order() {
-        
+        rec_in_order(1);
+        System.out.println();
     }
-
     @Override
     public void rec_post_order() {
-
+        rec_post_order(1);
+        System.out.println();
     }
 
     private void rec_pre_order(int cursor) {
-        if (cursor == 0) {
-            System.out.println();
+        if ((cursor == 0) || (cursor >= data.length)) {
             return;
         }
 
-        if ((cursor > data.length) || (data[cursor] == null)) {
+        if (data[cursor] == null) {
             return;
         }
 
@@ -267,13 +270,31 @@ class List_Binary_Tree implements Binary_Tree {
         rec_pre_order(cursor * 2);
         rec_pre_order(cursor * 2 + 1);
     }
+    private void rec_in_order(int cursor) {
+        if ((cursor == 0) || (cursor >= data.length)){
+            return;
+        }
 
-    public void rec_in_order(int cursor) {
+        if(data[cursor] == null) {
+            return;
+        }
 
+        rec_in_order(cursor * 2);
+        System.out.print(data[cursor] + " ");
+        rec_in_order(cursor * 2 + 1);
     }
+    private void rec_post_order(int cursor) {
+        if ((cursor == 0) || (cursor >= data.length)) {
+            return;
+        }
 
-    public void rec_post_order(int cursor) {
+        if (data[cursor] == null) {
+            return;
+        }
 
+        rec_post_order(cursor * 2);
+        rec_post_order(cursor * 2 + 1);
+        System.out.print(data[cursor] + " ");
     }
 
     @Override
@@ -315,7 +336,6 @@ class List_Binary_Tree implements Binary_Tree {
         }
         System.out.println();
     }
-
     @Override
     public void in_order() {
         if (is_empty()) {
@@ -351,7 +371,6 @@ class List_Binary_Tree implements Binary_Tree {
         }
         System.out.println();
     }
-
     @Override
     public void post_order() {
         if (is_empty()) {
@@ -399,6 +418,17 @@ class List_Binary_Tree implements Binary_Tree {
         System.out.println();
     }
 
+    /*
+        1. 수식 변환
+        2. 입력받은 수식을 전위 / 중위 / 후위 표기로 변환 >>> 스택 활용
+        3. 변환한 수식을 슨회하며 계산
+
+        내가 뭘 하려는거지
+        rec_cal-: 수식을 재귀를 이용한 트리 전위/중위/후위 순회로 계산할 수 있게 변형한 다음 계산 결과 산출
+        cal-: 수식을 트리 전위/중위/후위 순회로 계산할 수 있게 변형한 다음 계산 결과 산출
+        str_to_bt: 중위식을 전위/중위/후위 순회로 계산할 수 있는 형태의 트리로 변환
+         */
+
     @Override
     public void rec_cal_pre_order() {
 
@@ -433,14 +463,151 @@ class List_Binary_Tree implements Binary_Tree {
     public Binary_Tree inverse() {
         return null;
     }
+
+    static List_Binary_Tree expr_to_bt(String expr) {
+
+        System.out.println(expr_to_pofx(expr));
+        System.out.println(expr_to_prfx(expr));
+        return null;
+    }
+
+    private static String expr_to_prfx(String expr) {
+        StringBuilder sb = new StringBuilder();
+        Stack<Character> ops = new Stack<>();
+        Stack<Character> prfx = new Stack<>();
+
+        for (int i = expr.length()-1; i >= 0; i--) {
+            char token = expr.charAt(i);
+
+            switch (token) {
+                case '*': case '/': case '(':
+                    ops.push(token);
+                    break;
+                case '+': case '-':
+                    if (ops.isEmpty()) {
+                        ops.push(token);
+                    }
+                    else {
+                        while (!ops.isEmpty() && (get_ps(ops.peek()) <= get_ps(token))) {
+                            prfx.push(ops.pop());
+                        }
+                        ops.push(token);
+                    }
+                    break;
+                case ')':
+                    while (!ops.peek().equals('(')) {
+                        prfx.push(ops.pop());
+                    }
+                    ops.pop();
+                default:
+                    prfx.push(token);
+                    break;
+            }
+        }
+
+        while (!ops.isEmpty()) {
+            prfx.push(ops.pop());
+        }
+        while (!prfx.empty()) {
+            sb.append(prfx.pop());
+        }
+
+        return sb.toString();
+    }
+    private static String expr_to_infx(String expr) {
+        StringBuilder sb = new StringBuilder();
+        Stack<Character> ops = new Stack<Character>();
+
+        for (int i = 0; i < expr.length(); i++) {
+            char token = expr.charAt(i);
+
+            switch (token) {
+                case '*': case '/': case '(':
+                    ops.push(token);
+                    break;
+                case '+': case '-':
+                    if (ops.isEmpty()) {
+                        ops.push(token);
+                    }
+                    else {
+                        while (!ops.isEmpty() && (get_ps((char) ops.peek()) <= get_ps(token))) {
+                            sb.append(ops.pop());
+                        }
+                        ops.push(token);
+                    }
+                    break;
+                case ')':
+                    while (!ops.peek().equals('(')) {
+                        sb.append(ops.pop());
+                    }
+                    ops.pop();
+                default:
+                    sb.append(token);
+                    break;
+            }
+        }
+
+        while (!ops.isEmpty()) {
+            sb.append(ops.pop());
+        }
+
+        return sb.toString();
+    }
+    private static String expr_to_pofx(String expr) {
+        StringBuilder sb = new StringBuilder();
+        Stack<Character> ops = new Stack<Character>();
+
+        for (int i = 0; i < expr.length(); i++) {
+            char token = expr.charAt(i);
+
+            switch (token) {
+                case '*': case '/': case '(':
+                    ops.push(token);
+                    break;
+                case '+': case '-':
+                    if (ops.isEmpty()) {
+                        ops.push(token);
+                    }
+                    else {
+                        while (!ops.isEmpty() && (get_ps((char) ops.peek()) <= get_ps(token))) {
+                            sb.append(ops.pop());
+                        }
+                        ops.push(token);
+                    }
+                    break;
+                case ')':
+                    while (!ops.peek().equals('(')) {
+                        sb.append(ops.pop());
+                    }
+                    ops.pop();
+                default:
+                    sb.append(token);
+                    break;
+            }
+        }
+
+        while (!ops.isEmpty()) {
+            sb.append(ops.pop());
+        }
+
+        return sb.toString();
+    }
+
+    private static int get_ps(char op) {
+
+        int ps = 0;
+
+        switch (op) {
+            case '(': break;
+            case '+': case '-': ps = 1;
+            case '*': case '/': ps = 2;
+        }
+
+        return ps;
+    }
 }
 
 public class DS_ch07 {
-
-    static Binary_Tree str_to_bt(String s) {
-
-        return null;
-    }
 
     static void list_bt_test(List_Binary_Tree bt) {
         
@@ -503,6 +670,10 @@ public class DS_ch07 {
         bt2.in_order();
         bt2.post_order();
 
+        bt2.rec_in_order();
+        bt2.rec_post_order();
+
+        List_Binary_Tree.expr_to_bt("A*B+C");
     }
 
 }
