@@ -41,14 +41,14 @@ interface Binary_Tree {
     void pre_order();
     void in_order();
     void post_order();
-    
+
     void rec_cal_pre_order();
     void rec_cal_in_order();
     void rec_cal_post_order();
     void cal_pre_order();
     void cal_in_order();
     void cal_post_order();
-    
+
     Binary_Tree inverse();
 }
 
@@ -224,7 +224,7 @@ class List_Binary_Tree implements Binary_Tree {
             else {
                 mark[p] = true;
             }
-            
+
             if ((p*2 < data.length) && (data[p*2] != null) && (!mark[p*2])) {
                 p *= 2;
             }
@@ -464,11 +464,45 @@ class List_Binary_Tree implements Binary_Tree {
         return null;
     }
 
-    static List_Binary_Tree expr_to_bt(String expr) {
+    static List_Binary_Tree expr_to_bt(String expr, int expr_type) {
 
-        System.out.println(expr_to_pofx(expr));
-        System.out.println(expr_to_prfx(expr));
-        return null;
+        String fx;
+
+        if (expr_type == 0) { fx = expr_to_prfx(expr); }
+        else { fx = expr_to_pofx(expr); }
+
+        List_Binary_Tree fx_bt = new List_Binary_Tree((int) Math.round(Math.log(fx.length() / Math.log(2))));
+
+        int i;
+
+        for (
+                i = 0;
+                fx.charAt(i) == '+' || fx.charAt(i) == '-' || fx.charAt(i) == '*' || fx.charAt(i) == '/';
+                i++
+            ) {
+            fx_bt.insert(fx.charAt(i));
+        }
+
+        int start = 1;
+
+        while (fx_bt.data[2*start] != null || fx_bt.data[2*start+1] != null || start % 2 != 0) {
+            start++;
+        }
+
+        start *= 2;
+
+        for ( ; i < fx.length(); i++) {
+            fx_bt.insert(fx.charAt(i), start);
+            if (fx_bt.data[(start+1) / 2] == null) {
+                start /= 2;
+                if (fx_bt.data[start] != null) {
+                    start += 1;
+                }
+            }
+            else start += 1;
+        }
+
+        return fx_bt;
     }
 
     private static String expr_to_prfx(String expr) {
@@ -514,45 +548,7 @@ class List_Binary_Tree implements Binary_Tree {
 
         return sb.toString();
     }
-    private static String expr_to_infx(String expr) {
-        StringBuilder sb = new StringBuilder();
-        Stack<Character> ops = new Stack<Character>();
 
-        for (int i = 0; i < expr.length(); i++) {
-            char token = expr.charAt(i);
-
-            switch (token) {
-                case '*': case '/': case '(':
-                    ops.push(token);
-                    break;
-                case '+': case '-':
-                    if (ops.isEmpty()) {
-                        ops.push(token);
-                    }
-                    else {
-                        while (!ops.isEmpty() && (get_ps((char) ops.peek()) <= get_ps(token))) {
-                            sb.append(ops.pop());
-                        }
-                        ops.push(token);
-                    }
-                    break;
-                case ')':
-                    while (!ops.peek().equals('(')) {
-                        sb.append(ops.pop());
-                    }
-                    ops.pop();
-                default:
-                    sb.append(token);
-                    break;
-            }
-        }
-
-        while (!ops.isEmpty()) {
-            sb.append(ops.pop());
-        }
-
-        return sb.toString();
-    }
     private static String expr_to_pofx(String expr) {
         StringBuilder sb = new StringBuilder();
         Stack<Character> ops = new Stack<Character>();
@@ -610,7 +606,7 @@ class List_Binary_Tree implements Binary_Tree {
 public class DS_ch07 {
 
     static void list_bt_test(List_Binary_Tree bt) {
-        
+
         System.out.println("IS EMPTY TEST: EMPTY? >>> " + bt.is_empty());
         System.out.println("NON RECURSIVE PRE ORDER TEST");
         bt.pre_order();
@@ -673,7 +669,8 @@ public class DS_ch07 {
         bt2.rec_in_order();
         bt2.rec_post_order();
 
-        List_Binary_Tree.expr_to_bt("A*B+C");
+        List_Binary_Tree fx_bt = List_Binary_Tree.expr_to_bt("A*B+C", 0);
+        fx_bt.in_order();
     }
 
 }
