@@ -12,7 +12,7 @@ package ds_ch07_트리;
     - 순회: 전위, 중위, 후위, 레벨 순서
         재귀 표현
         비 재귀 표현
-    - 수식 변환 및 계산: 전위, 중위, 후위
+    - 수식 변환 및 계산: 전위, 중위, 후위 (DEP)
         재귀 표현
         비 재귀 표현
     - 좌우 반전 (07.17)
@@ -55,9 +55,11 @@ interface Binary_Tree {
 class List_Binary_Tree implements Binary_Tree {
 
     Object[] data;
+    int h;
 
     public List_Binary_Tree(int h) {
         data = new Object[(int) Math.pow(2, h + 1)];
+        this.h = h;
     }
 
     @Override
@@ -461,7 +463,15 @@ class List_Binary_Tree implements Binary_Tree {
 
     @Override
     public Binary_Tree inverse() {
-        return null;
+        List_Binary_Tree inv = new List_Binary_Tree(this.h);
+
+        for (int i = 1; i < (Math.pow(2, this.h+1)); i*=2) {
+            for (int j = 0; j < i; j++) {
+                inv.data[i*2-j-1] = data[i+j];
+            }
+        }
+
+        return inv;
     }
 
     static List_Binary_Tree expr_to_bt(String expr, int expr_type) {
@@ -603,6 +613,151 @@ class List_Binary_Tree implements Binary_Tree {
     }
 }
 
+class Link_BT implements Binary_Tree {
+
+    class Node {
+        Object data;
+        Node left;
+        Node right;
+
+        public Node(Object data) {
+            this.data = data;
+            left = null;
+            right = null;
+        }
+    }
+    int h;
+    Node root;
+
+    public Link_BT(int h) {
+        h = h;
+        root = null;
+    }
+
+    @Override
+    public Binary_Tree copy() {
+        return null;
+    }
+
+    @Override
+    public boolean is_empty() {
+        return root == null;
+    }
+
+    @Override
+    public boolean is_equal(Binary_Tree t) {
+        return false;
+    }
+
+    @Override
+    public void insert(Object data_in) {
+        if (this.is_empty()) {
+            root = new Node(data_in);
+            return;
+        }
+        insert(data_in, root, 0);
+    }
+    private void insert(Object data_in, Node p, int loc) {
+        if (p.left == null) {
+            p.left = new Node(data_in);
+            return;
+        }
+        else if (p.right == null) {
+            p.right = new Node(data_in);
+            return;
+        }
+
+        if (loc+1 >= h) return;
+
+        if (p.left != null) {
+            insert(data_in, p.left, loc+1);
+        }
+        else if (p.right != null) {
+            insert(data_in, p.right, loc+1);
+        }
+    }
+
+    @Override
+    public void delete(Object data_del) {
+
+    }
+
+    @Override
+    public void rec_pre_order() {
+        rec_pre_order(root);
+    }
+
+    private void rec_pre_order(Node p) {
+        System.out.print(p.data);
+        if (p.left != null) {
+            rec_pre_order(p.left);
+        }
+        if (p.right != null) {
+            rec_pre_order(p.right);
+        }
+    }
+
+    @Override
+    public void rec_in_order() {
+
+    }
+
+    @Override
+    public void rec_post_order() {
+
+    }
+
+    @Override
+    public void pre_order() {
+
+    }
+
+    @Override
+    public void in_order() {
+
+    }
+
+    @Override
+    public void post_order() {
+
+    }
+
+    @Override
+    public void rec_cal_pre_order() {
+
+    }
+
+    @Override
+    public void rec_cal_in_order() {
+
+    }
+
+    @Override
+    public void rec_cal_post_order() {
+
+    }
+
+    @Override
+    public void cal_pre_order() {
+
+    }
+
+    @Override
+    public void cal_in_order() {
+
+    }
+
+    @Override
+    public void cal_post_order() {
+
+    }
+
+    @Override
+    public Binary_Tree inverse() {
+        return null;
+    }
+}
+
 public class DS_ch07 {
 
     static void list_bt_test(List_Binary_Tree bt) {
@@ -652,7 +807,7 @@ public class DS_ch07 {
         bt1.insert("Juan", 7);
         bt1.insert("Sq", 4);
         bt1.insert("Wood", 9);
-        list_bt_test(bt1);*/
+        list_bt_test(bt1);
 
         List_Binary_Tree bt2 = new List_Binary_Tree(3);
         bt2.insert("A");
@@ -671,6 +826,12 @@ public class DS_ch07 {
 
         List_Binary_Tree fx_bt = List_Binary_Tree.expr_to_bt("A*B+C", 0);
         fx_bt.in_order();
+
+        List_Binary_Tree inv = (List_Binary_Tree) bt2.inverse();
+        inv.pre_order();
+         */
+
+
     }
 
 }
