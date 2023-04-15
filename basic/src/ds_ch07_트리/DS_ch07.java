@@ -575,7 +575,7 @@ class List_Binary_Tree implements Binary_Tree {
                         ops.push(token);
                     }
                     else {
-                        while (!ops.isEmpty() && (get_ps((char) ops.peek()) <= get_ps(token))) {
+                        while (!ops.isEmpty() && (get_ps(ops.peek()) <= get_ps(token))) {
                             sb.append(ops.pop());
                         }
                         ops.push(token);
@@ -628,9 +628,10 @@ class Link_BT implements Binary_Tree {
     }
     int h;
     Node root;
+    private int stat;
 
     public Link_BT(int h) {
-        h = h;
+        this.h = h;
         root = null;
     }
 
@@ -655,31 +656,56 @@ class Link_BT implements Binary_Tree {
             root = new Node(data_in);
             return;
         }
+        stat = 0;
+
         insert(data_in, root, 0);
     }
     private void insert(Object data_in, Node p, int loc) {
+        /*
+         이 insert로는 완전 이진 트리를 만들 수 없다 >>> 좌편향된 트리 형성
+         완전 이진 트리로 만들려면 순차 표현으로 구현하는게 편하다 >>> 인덱스만 증감시키면 되니까
+         굳이 연결 표현으로 완전 이진 트리를 만들려면 뭔가 기준이 필요해 보인다
+            >>> 키 값을 갖거나, 전체 트리 정보를 저장해두거나
+         즉, 연결 표현 이진 트리는 삽입, 삭제가 쉽다는 말은 이 기준을 이용했기 때문일 것 >>> 이진 탐색 트리
+        */
+
+        if (loc >= this.h) return;
+        if (stat == 1) return;
+
         if (p.left == null) {
             p.left = new Node(data_in);
-            return;
+            stat = 1;
         }
         else if (p.right == null) {
             p.right = new Node(data_in);
-            return;
+            stat = 1;
         }
-
-        if (loc+1 >= h) return;
-
-        if (p.left != null) {
+        else {
             insert(data_in, p.left, loc+1);
-        }
-        else if (p.right != null) {
             insert(data_in, p.right, loc+1);
         }
+
     }
 
     @Override
     public void delete(Object data_del) {
+        if (is_empty()) {
+            System.out.println("EMPTY TREE");
+            return;
+        }
+        delete(data_del, root, root);
+    }
+    private void delete(Object data_del, Node p, Node q) {
+        if (p.data.equals(data_del)) {
+            if (p.left == null && p.right == null) {
+                p = null;
 
+            }
+        }
+        else {
+            delete(data_del, p.left, p);
+            delete(data_del, p.right, p);
+        }
     }
 
     @Override
@@ -688,7 +714,7 @@ class Link_BT implements Binary_Tree {
     }
 
     private void rec_pre_order(Node p) {
-        System.out.print(p.data);
+        System.out.print(p.data + " ");
         if (p.left != null) {
             rec_pre_order(p.left);
         }
@@ -831,7 +857,13 @@ public class DS_ch07 {
         inv.pre_order();
          */
 
+        Link_BT bt = new Link_BT(3);
 
+        for (int i = 0; i < 16; i++) {
+            bt.insert(i);
+        }
+
+        bt.rec_pre_order();
     }
 
 }
