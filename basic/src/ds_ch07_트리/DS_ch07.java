@@ -22,8 +22,6 @@ package ds_ch07_트리;
 
  */
 
-import ds_ch05_스택.DS_ch05;
-
 import java.util.Arrays;
 import java.util.Stack;
 
@@ -615,7 +613,7 @@ class List_Binary_Tree implements Binary_Tree {
 
 class Link_BT implements Binary_Tree {
 
-    class Node {
+    private class Node {
         Object data;
         Node left;
         Node right;
@@ -626,6 +624,18 @@ class Link_BT implements Binary_Tree {
             right = null;
         }
     }
+    private class Del_info {
+        Node tp;
+        Node t;
+        boolean is_left;
+
+        public Del_info(Node tp, Node t, boolean is_left) {
+            this.tp = tp;
+            this.t = t;
+            this.is_left = is_left;
+        }
+    }
+
     int h;
     Node root;
     private int stat;
@@ -693,19 +703,107 @@ class Link_BT implements Binary_Tree {
             System.out.println("EMPTY TREE");
             return;
         }
-        delete(data_del, root, root);
-    }
-    private void delete(Object data_del, Node p, Node q) {
-        if (p.data.equals(data_del)) {
-            if (p.left == null && p.right == null) {
-                p = null;
+    /*
+    일치하지 않을 때
+        case 1. 리프인 경우
+            back
+        case 2. 그 외의 경우
+            trace
+    일치할 때
+        case 1. 리프인 경우
+            해당 노드 + 부모의 left / right null
+        case 2. 리프가 아닌 경우
+            맨 끝에서 하나 가져오기
+                해야되는 작업
+                1. 맨 끝의 부모 노드 null
+                2. 가져온 노드의 left, right 재설정
+                3. 지운 노드의 부모 노드 링크도 다시 설정
+    필요한 것
+        지울 노드 정보
+        지울 노드의 부모 노드 정보
+        맨 끝 노드
+        맨 끝 노드의 부모
 
+    delete 본체는 non-recursive, 목표 찾기는 recursive 하게?
+     */
+
+        Del_info del_info  = seek(data_del, root, root);
+        if (del_info == null) {
+            System.out.printf("%s NOT IN", data_del);
+            return;
+        }
+
+        Node t = del_info.t;
+        Node tp = del_info.tp;
+
+        if ((t.left == null) && (t.right == null)) {
+            if (del_info.is_left) {
+                tp.left = null;
+            }
+            else {
+                tp.right = null;
             }
         }
         else {
-            delete(data_del, p.left, p);
-            delete(data_del, p.right, p);
+            Node l = root, lp = root;
+            boolean is_left = false;
+
+            while ((l.left != null) || (l.right != null)) { // 어쩌다보니 완전 상태 유지하면서 지우도록 만들었네?
+                lp = l;
+                if ((l.left != null) && (l.right == null)) { // 갈 곳이 왼쪽밖에 없을 때만 왼쪽으로 이동
+                    l = l.left;
+                    is_left = true;
+                } else { // 아니면 오른쪽으로 먼저 이동
+                    l = l.right;
+                    is_left = false;
+                }
+            }
+
+            l.left = t.left;
+            l.right = t.right;
+
+            if (del_info.is_left) {
+                tp.left = l;
+            }
+            else {
+                tp.right = l;
+            }
+
+            if (is_left) {
+                lp.left = null;
+            }
+            else {
+                lp.right = null;
+            }
+
         }
+
+    }
+    private Del_info seek(Object data_target, Node tp, Node t) {
+        /*
+        전위 탐사로 대상 노드 색출
+        자식이 목표 데이터를 갖고 있으면 return [ p, c, is_left ]
+         */
+
+        if (t.data.equals(data_target)) { // 값을 찾아내면
+            stat = 1;
+            if (tp.left.data.equals(t.data)) { // 찾는 값이 부모의 왼쪽에 있다면
+                return new Del_info(tp, t, true);
+            }
+            else { // 오른쪽에 있다면
+                return new Del_info(tp, t, false);
+            }
+        }
+        if ((t.left == null) && (t.right == null)) return null;
+
+        Del_info del_info = seek(data_target, t, t.left);
+        if (stat == 1) return del_info;
+
+        del_info = seek(data_target, t, t.right);
+        if (stat == 1) return del_info;
+
+        // 한바퀴 돌았는데 못찾았으면
+        return null;
     }
 
     @Override
@@ -863,6 +961,11 @@ public class DS_ch07 {
             bt.insert(i);
         }
 
+        bt.rec_pre_order();
+        System.out.println();
+
+        bt.delete(9);
+        System.out.println();
         bt.rec_pre_order();
     }
 
