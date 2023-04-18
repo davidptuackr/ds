@@ -635,19 +635,86 @@ class Link_BT implements Binary_Tree {
             this.is_left = is_left;
         }
     }
+    private class Filler {
+        Node[] q;
+        Node fp;
+        int front;
+        int rear;
+
+        private Filler() {
+            q = new Node[(int) Math.pow(2, h)];
+            front = 0;
+            rear = 0;
+        }
+
+        private void enq(Node data_in) {
+            q[rear] = data_in;
+            rear = (rear+1) % q.length;
+        }
+
+        private void deq() {
+            q[front] = null;
+            front = (front+1) % q.length;
+            fp = q[front];
+        }
+    }
 
     int h;
     Node root;
     private int stat;
+    private Filler filler;
 
     public Link_BT(int h) {
         this.h = h;
         root = null;
+        filler = new Filler();
+    }
+
+    public void adv_insert(Object data_in) {
+        if (this.is_empty()) {
+            root = new Node(data_in);
+            filler.enq(this.root);
+            filler.fp = filler.q[filler.front];
+            return;
+        }
+
+        Node p = new Node(data_in);
+        filler.enq(p);
+        if (filler.fp.left == null) {
+            filler.fp.left = p;
+        }
+        else if (filler.fp.right == null) {
+            filler.fp.right = p;
+            filler.deq();
+        }
     }
 
     @Override
     public Binary_Tree copy() {
-        return null;
+        /*
+        전위 탐색 응용하여 복사
+         */
+        Link_BT cpy = new Link_BT(this.h);
+        cpy.root = new Node(this.root.data);
+        cpy.copy(this.root, cpy.root);
+
+        return cpy;
+    }
+    private void copy(Node tp, Node cp) {
+        if ((tp.left == null) && (tp.right == null)) {
+            return;
+        }
+        if (tp.left != null) {
+            cp.left = new Node(tp.left.data);
+            this.copy(tp.left, cp.left);
+        }
+        else {
+            return;
+        }
+        if (tp.right != null) {
+            cp.right = new Node(tp.right.data);
+            this.copy(tp.right, cp.right);
+        }
     }
 
     @Override
@@ -657,8 +724,33 @@ class Link_BT implements Binary_Tree {
 
     @Override
     public boolean is_equal(Binary_Tree t) {
-        return false;
+
+        stat = 0;
+
+        if (t.is_empty() || this.is_empty()) {
+            return false;
+        }
+
+        is_equal(this.root, ((Link_BT) t).root);
+
+        return stat == 0;
     }
+    private void is_equal(Node p, Node tp) {
+        if ((!p.data.equals(tp.data)) || (stat == 1)) {
+            stat = 1;
+            return;
+        }
+        if (
+            ((p.left == null) && (p.right == null)) &&
+            ((tp.left == null) && (tp.right == null))
+        ) {
+            return;
+        }
+
+        is_equal(p.left, tp.left);
+        is_equal(p.right, tp.right);
+    }
+
 
     @Override
     public void insert(Object data_in) {
@@ -679,7 +771,9 @@ class Link_BT implements Binary_Tree {
          즉, 연결 표현 이진 트리는 삽입, 삭제가 쉽다는 말은 이 기준을 이용했기 때문일 것 >>> 이진 탐색 트리
         */
 
-        if (loc >= this.h) return;
+        if (loc >= this.h) {
+            return;
+        }
         if (stat == 1) return;
 
         if (p.left == null) {
@@ -809,8 +903,8 @@ class Link_BT implements Binary_Tree {
     @Override
     public void rec_pre_order() {
         rec_pre_order(root);
+        System.out.println();
     }
-
     private void rec_pre_order(Node p) {
         System.out.print(p.data + " ");
         if (p.left != null) {
@@ -878,7 +972,30 @@ class Link_BT implements Binary_Tree {
 
     @Override
     public Binary_Tree inverse() {
-        return null;
+
+        Link_BT inv = new Link_BT(h);
+        inv.root = new Node(this.root.data);
+
+        inv.inv_routine(this.root, inv.root);
+
+        return inv;
+    }
+
+    private void inv_routine(Node p, Node ip) {
+
+        if ((p.left == null) && (p.right == null)) {
+            return;
+        }
+
+        ip.left = new Node(p.right);
+        ip.right = new Node(p.left);
+
+        if ((p.left != null)) {
+            inv_routine(p.left, ip.right);
+        }
+        if (p.right != null) {
+            inv_routine(p.right, ip.left);
+        }
     }
 }
 
@@ -957,16 +1074,16 @@ public class DS_ch07 {
 
         Link_BT bt = new Link_BT(3);
 
-        for (int i = 0; i < 16; i++) {
-            bt.insert(i);
+        for (int i = 0; i < 15; i++) {
+            bt.adv_insert(i);
         }
-
         bt.rec_pre_order();
-        System.out.println();
 
-        bt.delete(9);
-        System.out.println();
-        bt.rec_pre_order();
+        Link_BT cpy = (Link_BT) bt.copy();
+        cpy.rec_pre_order();
+
+        System.out.println("IS EQUAL? : " + bt.is_equal(cpy));
+        ((Link_BT) bt.inverse()).rec_pre_order();
     }
 
 }
