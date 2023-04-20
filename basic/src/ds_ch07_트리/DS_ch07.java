@@ -23,6 +23,7 @@ package ds_ch07_트리;
  */
 
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.Stack;
 
 interface Binary_Tree {
@@ -925,14 +926,86 @@ class Link_BT implements Binary_Tree {
 
     }
 
+    private class Trace_info {
+        Node n;
+        boolean lv;
+        boolean rv;
+
+        Trace_info(Node data, boolean lv, boolean rv) {
+            this.n = data;
+            this.lv = lv;
+            this.rv = rv;
+        }
+    }
+
     @Override
     public void pre_order() {
+        /*
+        스택을 이용해보자 (O)
+         */
+        Stack<Trace_info> tracer = new Stack<>();
+        tracer.push(new Trace_info(this.root, false, false));
 
+        while (!tracer.empty()) {
+            Trace_info p = tracer.peek();
+            if (!(p.lv || p.rv)) {
+                System.out.print(p.n.data + " ");
+            }
+
+            if (!p.lv) {
+                p.lv = true;
+                if (p.n.left != null) {
+                    tracer.push(new Trace_info(p.n.left, false, false));
+                }
+            }
+            else if (!p.rv) {
+                p.rv = true;
+                if (p.n.right != null) {
+                    tracer.push(new Trace_info(p.n.right, false, false));
+                }
+            }
+            else {
+                tracer.pop();
+            }
+
+            if (p.n.left == null && p.n.right == null) {
+                tracer.pop();
+            }
+        }
+        System.out.println();
     }
 
     @Override
     public void in_order() {
+        Stack<Trace_info> tracer = new Stack<>();
+        tracer.push(new Trace_info(this.root, false, false));
 
+        while (!tracer.empty()) {
+            Trace_info p = tracer.peek();
+
+            if (!p.lv) {
+                p.lv = true;
+                if (p.n.left != null) {
+                    tracer.push(new Trace_info(p.n.left, false, false));
+                }
+            }
+            else if (!p.rv) {
+                System.out.print(p.n.data + " ");
+                p.rv = true;
+                if (p.n.right != null) {
+                    tracer.push(new Trace_info(p.n.right, false, false));
+                }
+            }
+            else {
+                tracer.pop();
+            }
+
+            if (p.n.left == null && p.n.right == null) {
+                System.out.print(p.n.data + " ");
+                tracer.pop();
+            }
+        }
+        System.out.println();
     }
 
     @Override
@@ -1077,13 +1150,16 @@ public class DS_ch07 {
         for (int i = 0; i < 15; i++) {
             bt.adv_insert(i);
         }
-        bt.rec_pre_order();
+        /*bt.rec_pre_order();
 
         Link_BT cpy = (Link_BT) bt.copy();
         cpy.rec_pre_order();
 
         System.out.println("IS EQUAL? : " + bt.is_equal(cpy));
-        ((Link_BT) bt.inverse()).rec_pre_order();
+        bt.inverse().rec_pre_order();*/
+
+        bt.pre_order();
+        bt.in_order();
     }
 
 }
