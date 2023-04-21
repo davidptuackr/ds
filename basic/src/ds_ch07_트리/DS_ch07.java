@@ -18,12 +18,19 @@ package ds_ch07_트리;
     - 좌우 반전 (07.17)
     - 일반 트리 변환, 순회 (단, 재귀적으로)
     - 포리스트 변환, 순회 (단, 재귀적으로)
+ */
 
+/*
+    리팩토링 계획 (042123)
+        1. 비슷한 코드 반복 최소화
+            ex. 전위 순회로 목표값을 찾는 메소드는 클래스에 정의된 전위 순회 함수를 사용할 수 있도록 수정
 
+        2. 인터페이스 수정
+        3. private method, inner class, member 필요성 재검토
+        4. 리팩토링한 결과는 접두사 'adv_' 붙일 것
  */
 
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.Stack;
 
 interface Binary_Tree {
@@ -153,8 +160,7 @@ class List_Binary_Tree implements Binary_Tree {
         while (data[loc] != null) {
             loc++;
         }
-        if (loc >= data.length) System.out.println("INVALID LOCATION");
-        else data[loc] = data_in;
+        data[loc] = data_in;
     }
     public void insert(Object data_in, int loc) {
         if ((!is_empty()) && (
@@ -557,7 +563,6 @@ class List_Binary_Tree implements Binary_Tree {
 
         return sb.toString();
     }
-
     private static String expr_to_pofx(String expr) {
         StringBuilder sb = new StringBuilder();
         Stack<Character> ops = new Stack<Character>();
@@ -597,7 +602,6 @@ class List_Binary_Tree implements Binary_Tree {
 
         return sb.toString();
     }
-
     private static int get_ps(char op) {
 
         int ps = 0;
@@ -610,6 +614,52 @@ class List_Binary_Tree implements Binary_Tree {
 
         return ps;
     }
+
+    /*
+    List_Binary_Tree 리팩토링 계획 (042123)
+
+        1. 전위 순회를 사용하는 메소드는 클래스 내의 메소드를 사용할 수 있도록 개선
+            >>> 코드 반복 최소회
+            대상
+                copy, is_equal, 모든 순회 메소드
+        2. 멤버 필요성 재검토
+            대상: 전체
+
+     */
+
+    private int ord;
+
+    public int[] adv_pre_order() {
+        int [] locs = new int[data.length-1];
+        this.ord = 1;
+        adv_pre_order(locs, 1, 1);
+        return locs;
+    }
+
+    private void adv_pre_order(int[] locs, int loc, int ord) {
+        locs[ord-1] = loc;
+        this.ord += 1;
+        if (loc*2 >= 16) {
+            return;
+        }
+        adv_pre_order(locs, loc * 2, this.ord);
+        adv_pre_order(locs, loc * 2 + 1, this.ord);
+    }
+
+    public Binary_Tree adv_copy() {
+        if (is_empty()) return null;
+
+        List_Binary_Tree cpy = new List_Binary_Tree(h);
+        if (this.data.length - 1 >= 0) System.arraycopy(data, 1, cpy.data, 1, this.data.length - 1);
+
+        return cpy;
+    }
+
+    public boolean adv_is_equal(Binary_Tree t) {
+
+        return false;
+    }
+
 }
 
 class Link_BT implements Binary_Tree {
@@ -1010,7 +1060,35 @@ class Link_BT implements Binary_Tree {
 
     @Override
     public void post_order() {
+        Stack<Trace_info> tracer = new Stack<>();
+        tracer.push(new Trace_info(this.root, false, false));
 
+        while (!tracer.empty()) {
+            Trace_info p = tracer.peek();
+
+            if (!p.lv) {
+                p.lv = true;
+                if (p.n.left != null) {
+                    tracer.push(new Trace_info(p.n.left, false, false));
+                }
+            }
+            else if (!p.rv) {
+                p.rv = true;
+                if (p.n.right != null) {
+                    tracer.push(new Trace_info(p.n.right, false, false));
+                }
+            }
+            else {
+                System.out.print(p.n.data + " ");
+                tracer.pop();
+            }
+
+            if (p.n.left == null && p.n.right == null) {
+                System.out.print(p.n.data + " ");
+                tracer.pop();
+            }
+        }
+        System.out.println();
     }
 
     @Override
@@ -1112,6 +1190,24 @@ public class DS_ch07 {
 
     public static void main(String[] a) {
 
+        List_Binary_Tree lt = new List_Binary_Tree(3);
+
+        for (int i = 1; i < 16; i++) {
+            lt.insert(i);
+        }
+
+        int[] po = lt.adv_pre_order();
+
+        for (int j : po) {
+            System.out.print(j + " ");
+        }
+        System.out.println();
+
+        for (int j :
+                ((List_Binary_Tree) lt.adv_copy()).adv_pre_order()) {
+            System.out.print(j + " ");
+        }
+
         /*List_Binary_Tree bt1 = new List_Binary_Tree(3);
         bt1.insert("Alpha", 1);
         bt1.insert("Sig", 2);
@@ -1143,23 +1239,26 @@ public class DS_ch07 {
 
         List_Binary_Tree inv = (List_Binary_Tree) bt2.inverse();
         inv.pre_order();
-         */
 
         Link_BT bt = new Link_BT(3);
 
         for (int i = 0; i < 15; i++) {
             bt.adv_insert(i);
         }
-        /*bt.rec_pre_order();
+        bt.rec_pre_order();
 
         Link_BT cpy = (Link_BT) bt.copy();
         cpy.rec_pre_order();
 
         System.out.println("IS EQUAL? : " + bt.is_equal(cpy));
-        bt.inverse().rec_pre_order();*/
+        bt.inverse().rec_pre_order();
 
         bt.pre_order();
         bt.in_order();
+        bt.post_order();
+        
+         */
+
     }
 
 }
