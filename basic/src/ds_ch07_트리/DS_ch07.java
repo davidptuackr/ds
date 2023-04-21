@@ -159,6 +159,10 @@ class List_Binary_Tree implements Binary_Tree {
         int loc = 1;
         while (data[loc] != null) {
             loc++;
+            if (loc > data.length) {
+                System.out.println("TREE IS FULL");
+                return;
+            }
         }
         data[loc] = data_in;
     }
@@ -657,7 +661,14 @@ class List_Binary_Tree implements Binary_Tree {
 
     public boolean adv_is_equal(Binary_Tree t) {
 
-        return false;
+        int[] po_this = adv_pre_order();
+        int[] po_t = ((List_Binary_Tree) t).adv_pre_order();
+
+        for (int i = 0; i < po_this.length; i++) {
+            if (this.data[po_this[i]] != ((List_Binary_Tree) t).data[po_t[i]]) return false;
+        }
+
+        return true;
     }
 
 }
@@ -1207,6 +1218,8 @@ public class DS_ch07 {
                 ((List_Binary_Tree) lt.adv_copy()).adv_pre_order()) {
             System.out.print(j + " ");
         }
+
+        System.out.println("\nEQUAL?: " + lt.is_equal(lt.adv_copy()));
 
         /*List_Binary_Tree bt1 = new List_Binary_Tree(3);
         bt1.insert("Alpha", 1);
