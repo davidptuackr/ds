@@ -30,7 +30,6 @@ package ds_ch07_트리;
         4. 리팩토링한 결과는 접두사 'adv_' 붙일 것
  */
 
-import java.util.Arrays;
 import java.util.Stack;
 
 interface Binary_Tree {
@@ -72,39 +71,8 @@ class List_Binary_Tree implements Binary_Tree {
     public Binary_Tree copy() {
 
         // 과정은 전위 순회를 약간 변형한 모습
-
-        if (is_empty()) {
-            System.out.println("EMPTY TREE");
-            return null;
-        }
-
-        List_Binary_Tree cpy = new List_Binary_Tree((int) (Math.log(data.length) / Math.log(2)));
-        boolean[] mark = new boolean[data.length];
-        int p = 1;
-
-        while (p != 0) {
-            if (!mark[p]) {
-                cpy.data[p] = data[p];
-                mark[p] = true;
-            }
-            if ((p*2 < data.length) && (data[p*2] != null) && (!mark[p*2])) {
-                p *= 2;
-            }
-            else if ((p*2+1 < data.length) && (data[p*2+1] != null) && (!mark[p*2+1])) {
-                p = p * 2 + 1;
-            }
-            else {
-                p /= 2;
-            }
-        }
-
-        System.out.println("복제 대상");
-        this.pre_order();
-
-        System.out.println("복제 결과");
-        cpy.pre_order();
-
-        return cpy;
+        // 리팩토링: 어차피 배열로 구현했으니 똑같은 크기의 배열을 만들어 각 요소를 복사하는 식으로 변경 (042323)
+        return adv_copy();
     }
 
     @Override
@@ -116,42 +84,13 @@ class List_Binary_Tree implements Binary_Tree {
     public boolean is_equal(Binary_Tree t) {
 
         // 이것도 전위 순회 변형
-        if (this.is_empty() || t.is_empty()) {
-            System.out.println("EMPTY TREE");
-            return false;
-        }
-        boolean[] mark = new boolean[data.length];
-        int p = 1;
-
-        while (p != 0) {
-            if (!mark[p]) {
-                if (((List_Binary_Tree) t).data[p] != data[p]) {
-                    return false;
-                }
-                mark[p] = true;
-            }
-            if (
-                    (p*2 < data.length) &&
-                    (data[p*2] != null) &&
-                    (((List_Binary_Tree) t).data[p*2] != null) &&
-                    (!mark[p*2])
-            ) {
-                p *= 2;
-            }
-            else if (
-                    (p*2+1 < data.length) &&
-                    (data[p*2+1] != null) &&
-                    (((List_Binary_Tree) t).data[p*2+1] != null) &&
-                    (!mark[p*2+1])
-            ) {
-                p = p * 2 + 1;
-            }
-            else {
-                p /= 2;
-            }
-        }
-
-        return true;
+        /*
+            리팩토링 (042323)
+                두 트리의 전위 순회 결과를 가져와서 모양과 값이 다른지 비교
+                모양: 트리 원소의 위치 비교
+                값: 각 위치의 값 비교
+         */
+        return adv_is_equal(t);
     }
 
     @Override
@@ -199,56 +138,9 @@ class List_Binary_Tree implements Binary_Tree {
                     - 방금 썼던 리프 노드는 없앤다
          */
 
-        if (is_empty()) {
-            System.out.println("EMPTY TREE");
-            return;
-        }
+        // 리팩토링: 배열을 순차 탐색하면서 지울 대상을 색출하는 방식으로 변경
 
-        boolean[] mark = new boolean[data.length];
-        int p = 1, q = 1;
-
-        while ((p != 0)) {
-            // 어차피 is_empty로 검사했는데 여기 if에서 비었는지 검사할 필요가 있나?
-            if (data[p].equals(data_del) && (!mark[p])) { // 일치하는 곳 찾아내면
-                if ((p*2 > data.length) || (data[p*2] == null && data[p*2+1] == null)) {
-                    data[p] = null;
-                    break;
-                }
-                Arrays.fill(mark, false); // 찾아냈으니 초기화해도 괜찮겠지?
-
-                while ((q != 0) && (q*2 < data.length)) {
-                    mark[q] = true;
-                    if ((data[q*2] != null) && (!mark[q*2])) {
-                        q *= 2;
-                    }
-                    else if ((data[q*2+1] != null) && (!mark[q*2+1])) {
-                        q = q * 2 + 1;
-                    }
-                    else {
-                        q /= 2;
-                    }
-                }
-                data[p] = data[q];
-                data[q] = null;
-                break;
-            }
-            else {
-                mark[p] = true;
-            }
-
-            if ((p*2 < data.length) && (data[p*2] != null) && (!mark[p*2])) {
-                p *= 2;
-            }
-            else if ((p*2+1 < data.length) && (data[p*2+1] != null) && (!mark[p*2+1])) {
-                p = p * 2 + 1;
-            }
-            else {
-                p /= 2;
-            }
-        }
-
-        if (p != 0) { System.out.println("REMOVE " + data_del); }
-        else { System.out.println("COULD NOT FIND " + data_del); }
+        adv_delete(data_del);
     }
 
     @Override
@@ -321,7 +213,6 @@ class List_Binary_Tree implements Binary_Tree {
                 3.2 조건 2. 트리 범위를 벗어나지 않는가?
             4. 종료 조건: p/2 == 0일 때
          */
-
         if (is_empty()) {
             System.out.println("EMPTY TREE");
             return;
@@ -628,19 +519,30 @@ class List_Binary_Tree implements Binary_Tree {
                 copy, is_equal, 모든 순회 메소드
         2. 멤버 필요성 재검토
             대상: 전체
-
      */
 
+    /*
+        리팩토링: 순회 결과를 이용할 수 있도록 변경 >>> 방문한 위치들을 담은 배열 반환
+     */
     private int ord;
 
     public int[] adv_pre_order() {
+        if (is_empty()) {
+            System.out.println("EMPTY TREE");
+            return null;
+        }
+
         int [] locs = new int[data.length-1];
         this.ord = 1;
         adv_pre_order(locs, 1, 1);
+        this.ord = 1;
         return locs;
     }
 
     private void adv_pre_order(int[] locs, int loc, int ord) {
+        if (data[loc] == null) {
+            return;
+        }
         locs[ord-1] = loc;
         this.ord += 1;
         if (loc*2 >= 16) {
@@ -661,14 +563,45 @@ class List_Binary_Tree implements Binary_Tree {
 
     public boolean adv_is_equal(Binary_Tree t) {
 
+        if (this.is_empty() || t.is_empty()) {
+            return false;
+        }
+
         int[] po_this = adv_pre_order();
         int[] po_t = ((List_Binary_Tree) t).adv_pre_order();
 
         for (int i = 0; i < po_this.length; i++) {
-            if (this.data[po_this[i]] != ((List_Binary_Tree) t).data[po_t[i]]) return false;
+            if (
+                (this.data[po_this[i]] != ((List_Binary_Tree) t).data[po_t[i]])
+                || (po_this[i] != po_t[i])
+            ) return false;
         }
 
         return true;
+    }
+
+    public void adv_delete(Object data_del) {
+
+        if (is_empty()) {
+            System.out.println("EMPTY TREE");
+            return;
+        }
+
+        int loc = 0;
+        int i;
+        for (i = 1; (i < data.length-1) && (data[i] != null); i++) {
+            if (data[i].equals(data_del)) {
+                loc = i;
+            }
+        }
+        if (loc == 0) {
+            System.out.println(data_del + " NOT IN TREE");
+        }
+        else {
+            System.out.println("REMOVE " + data_del);
+            data[loc] = data[i];
+            data[i] = null;
+        }
     }
 
 }
@@ -1220,6 +1153,19 @@ public class DS_ch07 {
         }
 
         System.out.println("\nEQUAL?: " + lt.is_equal(lt.adv_copy()));
+
+        for (int j : lt.adv_pre_order()) {
+            System.out.print(j + " ");
+        }
+        System.out.println();
+
+        lt.adv_delete(9);
+
+        for (int j : lt.adv_pre_order()) {
+            if (j == 0) continue;
+            System.out.print(j + " ");
+        }
+        System.out.println();
 
         /*List_Binary_Tree bt1 = new List_Binary_Tree(3);
         bt1.insert("Alpha", 1);
