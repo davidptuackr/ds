@@ -1,0 +1,33 @@
+toString에 관한 내용 (050423)
+
+    toString은 System.out.print(객체);와 같이 객체를 출력할 때만 동작하는 것이 아니다.
+    객체의 메소드 실행 중, toString에 들어가는 부분의 내용이 바뀐다면 실시간으로 이것이 반영된다.
+    다음을 예로 들면
+
+    class My_Class {
+        int x;
+        ...
+        void set_x(int n) {
+            this.x = n; ---> 3
+            System.out.printf("NEW x: $d\n", this.x); ---> 4
+        }
+        public String toString() {
+            return this.getClass() + ".x: " + this.x;
+        }
+    }
+
+    public class Test {
+        public static void main(String[] args) {
+            My_Class a = new My_Class();
+
+            a.set_x(10); ---> 0
+            System.out.println(a);
+
+            a.set_x(999); ---> 1
+            System.out.println(a); ---> 2
+        }
+    }
+
+    0 이후 toString이 한 번 더 호출되는 시점은 2가 아니라 3이다.
+
+    +++ toString의 존재 의의는 편한 디버깅이지 클래스를 문자열로 뽑아내는 것이 아니었다

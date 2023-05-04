@@ -48,6 +48,11 @@ BST 외 힙 추가사항: 우선순위 큐(힙을 쓰는 별도 클래스로 제
 승자, 패자트리 연산
     통합: 각 배열 원소의 우열을 비교해 한 배열로 통합
 
+
+
+추가 문제
+
+- 이진 탐색 트리가 균형되도록 삽입하는 balanced_insert 
  */
 
 import java.util.LinkedList;
@@ -62,6 +67,7 @@ interface BST {
     BST concat (BST other);
     BST[] split (int key);
     BST reshape ();
+    String describe();
 }
 
 abstract class List_BST implements BST {
@@ -183,9 +189,11 @@ class Link_BST implements BST {
         }
         else if (p.key > key) {
             p.left = del_routine(key, p.left);
+            return p;
         }
         else if (p.key < key) {
             p.right = del_routine(key, p.right);
+            return p;
         }
 
         // 여기까지 오면 찾은 것
@@ -201,23 +209,56 @@ class Link_BST implements BST {
         else {
             Node rep = p.left;
             Node rep_p = rep;
-            while ((rep.left != null) && (rep.right != null)) {
+            while (rep.right != null) {
                 rep_p = rep;
                 rep = rep.right;
             }
-            rep_p.right = rep.left;
-            rep.left = p.left;
+            if (rep_p.equals(rep)) {
+                rep.right = p.right;
+            }
+            else {
+                rep_p.right = rep.left;
+                rep.left = p.left;
+                rep.right = p.right;
+            }
             return rep;
         }
     }
 
     @Override
     public Object seek(int key) {
-        return null;
+        Node found = seek_routine(key, 1, root) ;
+        return found == null ? null : found.data;
+    }
+    private Node seek_routine(int key, int lv, Node p) {
+        if ((p.key != key) && (p.left == null) && (p.right == null)) {
+            System.out.format("KEY %d NOT IN TREE\n", key);
+            return null;
+        }
+
+        if (p.key == key) {
+            System.out.format("KEY %d IN LEVEL %d: (key: %d, data: %s)\n", key, lv, key, p.data);
+            return p;
+        }
+        else if (p.key > key) {
+            return seek_routine(key, lv+1, p.left);
+        }
+        else {
+            return seek_routine(key, lv+1, p.right);
+        }
     }
 
     @Override
     public BST concat(BST other) {
+        /*
+        서로 다른 이진 탐색 트리의 이항 결합
+        교재에선 한쪽 트리의 모든 키가 다른 트리의 모든 키보다 작다고 했지만
+        여기서는 그렇지 않은 경우를 상정하고 작업한다.
+        
+        아이디어
+            1. 아예 양쪽 트리 노드를 큐에 전부 넣은 다음 하나씩 꺼내가면서 재구성
+                >>> 이 경우 양쪽의 원래 형체는 알아볼 수 없게 된다
+         */
         return null;
     }
 
@@ -231,26 +272,52 @@ class Link_BST implements BST {
         return null;
     }
 
-    @Override
-    public String toString() {
+    public String describe() {
         StringBuilder sb = new StringBuilder();
         Queue<Node> q = new LinkedList<>();
         q.add(this.root);
         int cnt = 1;
         int lv = 1;
+        Node polled;
 
-        while (!q.isEmpty()) {
-            if (cnt == Math.pow(2, lv-1)) {
-                sb.append(String.format("LEVEL %d: ", lv));
+        /*while (!q.isEmpty()) {
+            if ((cnt) == Math.pow(2, lv-1)) {
+                sb.append(String.format("\nLEVEL %d: ", lv++));
             }
-            Node polled = q.poll();
-            sb.append(1);
+            else {
+                sb.append("\t, ");
+            }
+            cnt++;
+            if (q.peek() != null) {
+                polled = q.poll();
+            }
+            else {
+                q.remove();
+                continue;
+            }
+            sb.append(polled.data);
             q.add(polled.left);
             q.add(polled.right);
+        }*/
+
+        while (!q.isEmpty()) {
+            polled = q.poll();
+            if (q.isEmpty() || (q.peek().key < polled.key)) {
+                sb.append(String.format("\nLEVEL %d: %s ", lv++, polled.data));
+            }
+            else {
+                sb.append(polled.data);
+                sb.append(" ");
+            }
+            if (polled.left != null) {
+                q.add(polled.left);
+            }
+            if (polled.right != null) {
+                q.add(polled.right);
+            }
+
         }
-
-
-        return null;
+        return sb.toString();
     }
 }
 
@@ -260,12 +327,18 @@ public class DS_ch08 {
 
         Random ran = new Random(273);
 
-        Link_BST lb = new Link_BST();
+        BST lb = new Link_BST();
         for (int i = 0; i < 10; i++) {
             int x = ran.nextInt(100);
-            lb.insert(x, x);
-            System.out.println(x);
+            lb.insert(x, x*10);
         }
+        System.out.println(lb.describe());
+        /*lb.delete(92);
+        lb.delete(19);
+        System.out.println(lb.describe());*/
+        System.out.println(lb.seek(13));
+
+
     }
 
 
