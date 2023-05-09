@@ -55,6 +55,7 @@ BST 외 힙 추가사항: 우선순위 큐(힙을 쓰는 별도 클래스로 제
 - 이진 탐색 트리가 균형되도록 삽입하는 balanced_insert 
  */
 
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -273,12 +274,29 @@ class Link_BST implements BST {
     }
 
     public String describe() {
+        /*
+        과정
+        1. 각 레벨에서 가장 큰 원소 탐색
+            1.1 Node 리스트 활용
+            1.2 가장 오른쪽에 있는 원소 탐색
+            1.3 오른쪽 끝의 자식이 둘 다 null 일 경우 백트레킹
+                백트레킹 과정
+                1.3.1 부모의 왼쪽 자식의 오른쪽 노드 탐색
+                1.3.2 부모의 왼쪽 자식의 오른쪽이 null 이면 왼쪽 자식의 왼쪽 탐색
+                1.3.3 왼쪽 자식도 null 이면 부모의 부모 백트레킹
+                1.3.4 내려가는 횟수 1회 증가
+                1.3.5 루트까지 돌아왔을 경우 (배열 마지막 원소 인덱스 + 1)회만큼 오른쪽으로 이동
+        2. 루트를 큐에 삽입
+        3. 아까 peek 한 원소가 해당 레벨 최대 노드였다면 레벨 정보를 sb에 추가 삽입
+         */
+
         StringBuilder sb = new StringBuilder();
         Queue<Node> q = new LinkedList<>();
         q.add(this.root);
-        int cnt = 1;
+        boolean is_lv_first = true;
+        int lv_first = this.root.key;
         int lv = 1;
-        Node polled;
+        Node peeked;
 
         /*while (!q.isEmpty()) {
             if ((cnt) == Math.pow(2, lv-1)) {
@@ -299,26 +317,105 @@ class Link_BST implements BST {
             q.add(polled.left);
             q.add(polled.right);
         }*/
-
+        /*
         while (!q.isEmpty()) {
-            polled = q.poll();
-            if (q.isEmpty() || (q.peek().key < polled.key)) {
-                sb.append(String.format("\nLEVEL %d: %s ", lv++, polled.data));
+            if (q.peek().key <= dq.peekFirst().key) {
+                sb.append(String.format("\nLEVEL %d: %s ", lv++, q.peek().data));
             }
             else {
-                sb.append(polled.data);
+                sb.append(q.peek().data);
                 sb.append(" ");
             }
-            if (polled.left != null) {
-                q.add(polled.left);
-            }
-            if (polled.right != null) {
-                q.add(polled.right);
-            }
+            q.remove();
 
+            if (peeked.left != null) {
+                q.add(peeked.left);
+            }
+            if (peeked.right != null) {
+                q.add(peeked.right);
+            }
         }
+
+        return sb.toString();
+    }*/
+
+        while (!q.isEmpty()) {
+            if (lv_first == q.peek().key) {
+                sb.append(String.format("\nLEVEL %d: %s ", lv++, q.peek().data));
+                is_lv_first = false;
+            }
+            else {
+                sb.append(q.peek().data);
+                sb.append(" ");
+            }
+            peeked = q.poll();
+
+            if (peeked.left != null) {
+                q.add(peeked.left);
+                if (!is_lv_first) {
+                    is_lv_first = true;
+                    lv_first = peeked.left.key;
+                }
+            }
+            if (peeked.right != null) {
+                q.add(peeked.right);
+                if (!is_lv_first) {
+                    is_lv_first = true;
+                    lv_first = peeked.right.key;
+                }
+            }
+        }
+
         return sb.toString();
     }
+    /*
+    private class LV_maxes {
+
+        Node front;
+        Node tail;
+        Node cursor;
+        int lv;
+
+        public LV_maxes() {
+            this.front = new Node(root.key, root, null, null);
+            this.tail = front;
+            this.cursor = front;
+            this.lv = 1;
+        }
+    }
+    private LV_maxes get_lv_maxes() {
+
+        LV_maxes lv_maxes = new LV_maxes();
+
+        return lv_maxes_routine(lv_maxes, lv_maxes.tail, lv_maxes.cursor, root, lv_maxes.lv);
+    }
+
+    private LV_maxes lv_maxes_routine(LV_maxes lv_maxes, Node t, Node c, Node data, int loc) {
+
+        if (data.right != null) {
+            Node p = new Node(data.right.key, data.right, t, null);
+            lv_maxes.tail.right = p;
+            lv_maxes.tail = p;
+            lv_maxes.cursor = p;
+            lv_maxes.lv++;
+            return lv_maxes_routine(lv_maxes, t.right, c.right, data.right, lv_maxes.lv);
+        }
+        else if (data.left != null) {
+            Node p = new Node(data.left.key, data.left, t, null);
+            lv_maxes.tail.right = p;
+            lv_maxes.tail = p;
+            lv_maxes.cursor = p;
+            lv_maxes.lv++;
+            return lv_maxes_routine(lv_maxes, t.right, c.right, data.left, lv_maxes.lv);
+        }
+        else {
+            lv_maxes.cursor = t.left;
+
+        }
+
+        return null;
+    }
+    */
 }
 
 public class DS_ch08 {
