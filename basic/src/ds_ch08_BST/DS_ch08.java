@@ -259,7 +259,30 @@ class Link_BST implements BST {
         아이디어
             1. 아예 양쪽 트리 노드를 큐에 전부 넣은 다음 하나씩 꺼내가면서 재구성
                 >>> 이 경우 양쪽의 원래 형체는 알아볼 수 없게 된다
+
+        과정
+            1. other를 큐에 삽입
+            2. 하나씩 deq
+            3. deq한 것을 this에 삽입
          */
+        // 이것부터 시작
+        // >>> Link_BST = new ... <<<
+
+        Queue<Node> q = new LinkedList<>();
+        q.add(((Link_BST) other).root);
+        Node polled;
+
+        while (!q.isEmpty()) {
+            polled = q.poll();
+            this.insert(polled.key, polled.data);
+            if (polled.left != null) {
+                q.add(polled.left);
+            }
+            if (polled.right != null) {
+                q.add(polled.right);
+            }
+        }
+
         return null;
     }
 
@@ -425,11 +448,20 @@ public class DS_ch08 {
         Random ran = new Random(273);
 
         BST lb = new Link_BST();
+        BST lb2 = new Link_BST();
+
         for (int i = 0; i < 10; i++) {
             int x = ran.nextInt(100);
             lb.insert(x, x*10);
         }
+        for (int i = 0; i < 15; i++) {
+            int x = ran.nextInt(100);
+            lb2.insert(x, x);
+        }
+
+
         System.out.println(lb.describe());
+        System.out.println(lb2.describe());
         /*lb.delete(92);
         lb.delete(19);
         System.out.println(lb.describe());*/
