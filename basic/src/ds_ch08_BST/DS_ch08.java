@@ -137,6 +137,9 @@ class Link_BST implements BST {
     public Link_BST() {
         this.root = null;
     }
+    private Link_BST(Node to_root) {
+        this.root = to_root;
+    }
 
     @Override
     public boolean empty() {
@@ -161,6 +164,9 @@ class Link_BST implements BST {
         }
         else if (p.key < key) {
             p.right = insert_routine(key, data_in, p.right);
+        }
+        else {
+            System.out.printf("KEY %d ALREADY EXIST IN TREE\n", key);
         }
         return p;
     }
@@ -228,24 +234,29 @@ class Link_BST implements BST {
 
     @Override
     public Object seek(int key) {
-        Node found = seek_routine(key, 1, root) ;
-        return found == null ? null : found.data;
-    }
-    private Node seek_routine(int key, int lv, Node p) {
-        if ((p.key != key) && (p.left == null) && (p.right == null)) {
+        Node found = seek_routine(key,root);
+        if (found != null) {
+            System.out.format("KEY %d IN TREE: (key: %d, data: %s)\n", key, key, found.data);
+            return found.data;
+        }
+        else {
             System.out.format("KEY %d NOT IN TREE\n", key);
+            return null;
+        }
+    }
+    private Node seek_routine(int key, Node p) {
+        if ((p.key != key) && (p.left == null) && (p.right == null)) {
             return null;
         }
 
         if (p.key == key) {
-            System.out.format("KEY %d IN LEVEL %d: (key: %d, data: %s)\n", key, lv, key, p.data);
             return p;
         }
         else if (p.key > key) {
-            return seek_routine(key, lv+1, p.left);
+            return seek_routine(key, p.left);
         }
         else {
-            return seek_routine(key, lv+1, p.right);
+            return seek_routine(key, p.right);
         }
     }
 
@@ -265,16 +276,17 @@ class Link_BST implements BST {
             2. 하나씩 deq
             3. deq한 것을 this에 삽입
          */
-        // 이것부터 시작
+        // 이것부터 시작 (완료: 051123 14)
         // >>> Link_BST = new ... <<<
 
+        Link_BST conc = new Link_BST();
         Queue<Node> q = new LinkedList<>();
-        q.add(((Link_BST) other).root);
         Node polled;
+        q.add(this.root);
 
         while (!q.isEmpty()) {
             polled = q.poll();
-            this.insert(polled.key, polled.data);
+            conc.insert(polled.key, polled.data);
             if (polled.left != null) {
                 q.add(polled.left);
             }
@@ -283,16 +295,126 @@ class Link_BST implements BST {
             }
         }
 
-        return null;
+        q.add(((Link_BST) other).root);
+
+        while (!q.isEmpty()) {
+            polled = q.poll();
+            conc.insert(polled.key, polled.data);
+            if (polled.left != null) {
+                q.add(polled.left);
+            }
+            if (polled.right != null) {
+                q.add(polled.right);
+            }
+        }
+
+        return conc;
     }
 
     @Override
     public BST[] split(int key) {
-        return new BST[0];
+
+        Node found = seek_routine(key, root);
+        if (found == null) {
+            System.out.printf("UNABLE TO SPLIT TREE: KEY %d NOT IN TREE", key);
+            return null;
+        }
+
+        Link_BST lower = new Link_BST(found.left);
+        Link_BST higher = new Link_BST(found.right);
+        Queue<Node> lq = new LinkedList<>();
+        Queue<Node> hq = new LinkedList<>();
+        Node polled;
+
+        if (this.root.key < found.key) {
+            lq.add(this.root);
+        }
+        else {
+            hq.add(this.root);
+        }
+
+        while (!lq.isEmpty() || !hq.isEmpty()) {
+            if (lq.peek() != null) {
+                polled = lq.poll();
+                if (polled.key == found.key) {
+                    continue;
+                }
+                lower.insert(polled.key, polled.data);
+                if (polled.left != null) {
+                    if (polled.left.key < found.key) {
+                        lq.add(polled.left);
+                    }
+                    else {
+                        hq.add(polled.left);
+                    }
+                }
+                if (polled.right != null) {
+                    if (polled.right.key < found.key) {
+                        lq.add(polled.right);
+                    }
+                    else {
+                        hq.add(polled.right);
+                    }
+                }
+            }
+
+            if (hq.peek() != null) {
+                polled = hq.poll();
+                if (polled.key == found.key) {
+                    continue;
+                }
+                higher.insert(polled.key, polled.data);
+                if (polled.left != null) {
+                    if (polled.left.key < found.key) {
+                        lq.add(polled.left);
+                    }
+                    else {
+                        hq.add(polled.left);
+                    }
+                }
+                if (polled.right != null) {
+                    if (polled.right.key < found.key) {
+                        lq.add(polled.right);
+                    }
+                    else {
+                        hq.add(polled.right);
+                    }
+                }
+            }
+
+        }
+
+
+        /*
+        트리를 순회하면서
+            key의 왼쪽 서브트리는 lower
+            key의 오른쪽 서브트리는 higher
+
+            p.key가 기준보다 크면 hq에 삽입
+            p.key가 기준보다 작다면 lq에 삽입
+
+            p의 왼쪽 자식이 key보다 작다면 왼쪽 서브트리 전부 삽입
+            p의 오른쪽 자식은 검사해봐야 암
+
+            lq에 있는 노드는 전부 lower에 삽입
+            hq에 있는 노드는 전부 higher에 삽입
+         */
+
+        return new Link_BST[] {lower, higher};
     }
 
     @Override
     public BST reshape() {
+        /*
+        과정
+            1. this의 노드를 root부터 차례대로 큐에 넣는다
+            2. 다 넣으면 하나씩 꺼낸다
+            3. 넣을 때 위치를 조정하면서 넣는다
+         */
+
+        Queue<Node> q = new LinkedList<>();
+
+
         return null;
     }
 
@@ -459,13 +581,26 @@ public class DS_ch08 {
             lb2.insert(x, x);
         }
 
-
+        /*
         System.out.println(lb.describe());
         System.out.println(lb2.describe());
-        /*lb.delete(92);
+        */
+
+        /*
+        lb.delete(92);
         lb.delete(19);
-        System.out.println(lb.describe());*/
+        */
+
+        /*
         System.out.println(lb.seek(13));
+         */
+
+        BST conc = lb.concat(lb2);
+        System.out.println(conc.describe());
+
+        BST[] spl = conc.split(38);
+        System.out.println(spl[0].describe());
+        System.out.println(spl[1].describe());
 
 
     }
