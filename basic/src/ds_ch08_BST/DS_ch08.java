@@ -410,10 +410,46 @@ class Link_BST implements BST {
             1. this의 노드를 root부터 차례대로 큐에 넣는다
             2. 다 넣으면 하나씩 꺼낸다
             3. 넣을 때 위치를 조정하면서 넣는다
+
+        상세
+            1. 큐에서 꺼낸 값p와 루트를 비교한다
+            2.
+                CASE 1. 루트 < p < 루트.right 일 경우 루트가 좌측 아래로 내려간다
+                CASE 2. 루트 < p 면서 p > 루트.right일 경우 p가 우측 아래로 내려간다
+                cASE 3. 루트 > p 일 경우 p가 좌측 아래로 내려간다
+            3. 이동한 노드는 이동한 위치에서 2를 반복한다
+            4. 이동한 노드가 리프 위치에 도달하면 반복을 종료한다
          */
 
+        Link_BST reshaped = new Link_BST();
         Queue<Node> q = new LinkedList<>();
+        Node polled;
+        q.add(this.root);
 
+        while (!q.isEmpty()) {
+            polled = q.poll();
+            if (polled.left != null) {
+                q.add(polled.left);
+            }
+            if (polled.right != null) {
+                q.add(polled.right);
+            }
+
+            reshaped.root = reshaping_routine(polled, reshaped.root);
+        }
+
+        return null;
+    }
+    private Node reshaping_routine(Node polled, Node cmp) {
+
+        if (cmp == null) {
+            return polled;
+        }
+
+        if (polled.key < cmp.key) {
+            cmp.left = reshaping_routine(polled, cmp.left);
+            return cmp;
+        }
 
         return null;
     }
