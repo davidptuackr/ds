@@ -411,7 +411,7 @@ class Link_BST implements BST {
             2. 다 넣으면 하나씩 꺼낸다
             3. 넣을 때 위치를 조정하면서 넣는다
 
-        상세
+        상세 (051223)
             1. 큐에서 꺼낸 값p와 루트를 비교한다
             2.
                 CASE 1. 루트 < p < 루트.right 일 경우 루트가 좌측 아래로 내려간다
@@ -419,12 +419,32 @@ class Link_BST implements BST {
                 cASE 3. 루트 > p 일 경우 p가 좌측 아래로 내려간다
             3. 이동한 노드는 이동한 위치에서 2를 반복한다
             4. 이동한 노드가 리프 위치에 도달하면 반복을 종료한다
+
+        방법 변경 (051323)
+            1. 큐를 두 개 쓴다
+                큐 q: 역할은 이전과 동일
+                큐 r: 트리를 완전하게 만드는 역할. 즉 큐에서 peek 한 값의 자식이 다음에 노드가 들어가야 할 자리
+            2. 다음과 같이 정한다
+                qp = q에서 poll 한 노드
+                rp = r에서 peek 한 노드.
+                cmp = 비교 대상
+
+            3. 조건을 다음과 같이 한다
+                rp는 양쪽 자식이 null이 아니어야 큐에서 나올 수 있다
+                cmp는 바뀔 수 있다
+
+            4. 동작은 다음과 같이 한다
+                어디로 내려갈지 정한다
+
+
          */
 
         Link_BST reshaped = new Link_BST();
         Queue<Node> q = new LinkedList<>();
+        Queue<Node> r = new LinkedList<>();
         Node polled;
         q.add(this.root);
+        r.add(this.root);
 
         while (!q.isEmpty()) {
             polled = q.poll();
@@ -435,21 +455,40 @@ class Link_BST implements BST {
                 q.add(polled.right);
             }
 
-            reshaped.root = reshaping_routine(polled, reshaped.root);
+            reshaped.root = reshaping_routine(polled, reshaped.root, r);
         }
 
         return null;
     }
-    private Node reshaping_routine(Node polled, Node cmp) {
+    private Node reshaping_routine(Node polled, Node cmp, Queue<Node> r) {
 
-        if (cmp == null) {
+        /*if (cmp == null) {
             return polled;
         }
 
         if (polled.key < cmp.key) {
-            cmp.left = reshaping_routine(polled, cmp.left);
+            cmp.left = reshaping_routine(polled, cmp.left, r);
             return cmp;
         }
+        else if (polled.key > cmp.key) {
+            cmp.right = reshaping_routine(polled, cmp.right, r);
+            return cmp;
+        }
+
+        if ((cmp.left != null) && (cmp.key < polled.key) && (polled.key < cmp.right.key)) {
+            polled.right = cmp.right;
+            polled.left = reshaping_routine(cmp, cmp.left, r);
+            return polled;
+        }
+
+        if ((cmp.right != null) && (cmp.key < polled.key) && (polled.key < cmp.right.key)) {
+            polled.left = cmp.left;
+            polled.right = cmp.right;
+            cmp.left = reshaping_routine(cmp, cmp.left, r);
+            return polled;
+        }*/
+
+
 
         return null;
     }
