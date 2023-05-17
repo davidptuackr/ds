@@ -434,33 +434,39 @@ class Link_BST implements BST {
                 cmp는 바뀔 수 있다
 
             4. 동작은 다음과 같이 한다
-                어디로 내려갈지 정한다
-
-
+                CASE 1. rp가 cmp의 왼쪽 서브트리에 있을 경우 (즉 rp < cmp)
+                    1. qp < cmp면 qp가 내려간다
+                    2. qp > cmp면 cmp가 내려가고 qp의 오른쪽은 원래 cmp의 오른쪽으로 한 다음 재조정한다
+                CASE 2. rp가 cmp의 오른쪽 서브트리에 있을 경우 (즉 rp > cmp)
+                    1. qp < cmp면 cmp가 내려가고 qp의 왼쪽은 원래 cmp의 왼쪽으로 한 다음 재조정한다
+                    2. qp > cmp면 qp가 내려간다
          */
 
         Link_BST reshaped = new Link_BST();
         Queue<Node> q = new LinkedList<>();
         Queue<Node> r = new LinkedList<>();
-        Node polled;
+        Node qp, rp;
         q.add(this.root);
-        r.add(this.root);
 
         while (!q.isEmpty()) {
-            polled = q.poll();
-            if (polled.left != null) {
-                q.add(polled.left);
+            qp = q.poll();
+            if (qp.left != null) {
+                q.add(qp.left);
             }
-            if (polled.right != null) {
-                q.add(polled.right);
+            if (qp.right != null) {
+                q.add(qp.right);
             }
 
-            reshaped.root = reshaping_routine(polled, reshaped.root, r);
+            reshaped.root = reshaping_routine(new Node(qp.key, qp.data), reshaped.root, r);
+
+            if (r.peek().left != null && r.peek().right != null) {
+                r.remove();
+            }
         }
 
-        return null;
+        return reshaped;
     }
-    private Node reshaping_routine(Node polled, Node cmp, Queue<Node> r) {
+    private Node reshaping_routine(Node qp, Node cmp, Queue<Node> r) {
 
         /*if (cmp == null) {
             return polled;
@@ -488,9 +494,46 @@ class Link_BST implements BST {
             return polled;
         }*/
 
+        if (cmp == null) {
+            Node n = new Node(qp.key, qp.data);
+            r.add(n);
+            return n;
+        }
 
+        Node rp = r.peek();
 
-        return null;
+        if (rp.key < cmp.key) {
+            if (qp.key < cmp.key) {
+                cmp.left = reshaping_routine(qp, cmp.left, r);
+                return cmp;
+            }
+            else {
+                qp.left = reshaping_routine(cmp, cmp.left, r);
+                qp.right = reshaping_routine(qp, cmp.right, r);
+                return qp;
+            }
+        }
+        else if (rp.key > cmp.key) {
+            if (qp.key < cmp.key) {
+                qp.left = reshaping_routine(qp, cmp.left, r);
+                qp.right = reshaping_routine(cmp, cmp.right, r);
+                return qp;
+            }
+            else {
+                cmp.right = reshaping_routine(qp, cmp.right, r);
+                return cmp;
+            }
+        }
+        else {
+            if (qp.key < cmp.key) {
+                cmp.left = reshaping_routine(qp, cmp.left, r);
+                return cmp;
+            }
+            else {
+                cmp.right = reshaping_routine(qp, cmp.right, r);
+                return cmp;
+            }
+        }
     }
 
     public String describe() {
@@ -673,11 +716,14 @@ public class DS_ch08 {
         BST conc = lb.concat(lb2);
         System.out.println(conc.describe());
 
+        /*
         BST[] spl = conc.split(38);
         System.out.println(spl[0].describe());
         System.out.println(spl[1].describe());
+        */
 
-
+        BST resh = lb.reshape();
+        System.out.println(resh.describe());
     }
 
 
