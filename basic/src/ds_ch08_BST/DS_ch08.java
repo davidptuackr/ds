@@ -133,9 +133,12 @@ class Link_BST implements BST {
     }
 
     Node root;
+    int cnt, h;
 
     public Link_BST() {
         this.root = null;
+        this.cnt = 0;
+        this.h = 0;
     }
     private Link_BST(Node to_root) {
         this.root = to_root;
@@ -150,13 +153,19 @@ class Link_BST implements BST {
     public void insert(int key, Object data_in) {
         if (empty()) {
             root = new Node(key, data_in);
+            cnt++;
             return;
         }
 
         root = insert_routine(key, data_in, root);
+
+        if (cnt == Math.pow(2, h+1)) {
+            h++;
+        }
     }
     private Node insert_routine(int key, Object data_in, Node p) {
         if (p == null) {
+            cnt++;
             return new Node(key, data_in);
         }
         else if (p.key > key) {
@@ -187,6 +196,10 @@ class Link_BST implements BST {
                 방법 ? 오른쪽을 하나씩 땡겨오기 >>> 너무 복잡해보임
      */
         root = del_routine(key, root);
+        cnt--;
+        if (cnt == Math.pow(2, h)-1) {
+            h--;
+        }
     }
     private Node del_routine(int key, Node p) {
         // 탐색 단계
@@ -405,17 +418,96 @@ class Link_BST implements BST {
 
     @Override
     public BST reshape() {
+
         /*
+        수정 (052823)
+
+        중위순회를 이용해 재형성
+
         과정
-            1. this의 노드를 root부터 차례대로 큐에 넣는다
-            2. 다 넣으면 하나씩 꺼낸다
-            3. 넣을 때 위치를 조정하면서 넣는다
+            1. 트리 내의 노드 Node 배열 q에 다 빼낸다
+            2. 꺼낸 노드 수+1 과 길이가 같은 정수 배열 ords를 생성한다
+            3. q를 키 값 순으로 오름차순 정렬한다
+            4. ords의 값을 완전 이진 트리 중위 순회 시 방문 순서로 한다
+                ex.
+                    ords[1]: 2^h ( < cnt)
+                    ords[2]: 2^(h-1)
+                    ords[3]: 2^h +1
+                    ...
+                    ords[LENGTH]: cnt
+            5. 재형성 결과를 저장할 트리 rsh에 q[ord[1]], q[ord[2]] 순으로 집어넣는다
          */
 
-        Queue<Node> q = new LinkedList<>();
+        Queue<Node> tq = new LinkedList<>();
+        Node[] q = new Node[cnt+1];
+        int[] ords = new int[cnt+1];
+        int qi = 1;
+        tq.add(this.root);
 
+        // 1. 트리 내의 노드 Node 배열 q에 다 빼낸다
 
-        return null;
+        while (!tq.isEmpty()) {
+
+            q[qi] = tq.poll();
+
+            if (q[qi].left != null) { tq.add(q[qi].left); }
+            if (q[qi].right != null) { tq.add(q[qi].right); }
+
+            qi++;
+        }
+
+        // 2. ords 값을 완전 이진 트리 중위 순회 시 방문 순서로 한다
+
+        int i_iter = 1;
+        ords = ord_routine(i_iter, ords);
+
+        // 3. q를 키 값 순으로 오름차순 정렬한다
+
+        for (int i = 1; i < q.length; i++) {
+            for (int j = i; j < q.length; j++) {
+                if (q[i].key > q[j].key) {
+                    Node tn = q[i];
+                    q[i] = q[j];
+                    q[j] = tn;
+                }
+            }
+        }
+
+        // 4. 재형성 결과를 저장할 트리 rsh에 q[ord[1]], q[ord[2]] 순으로 집어넣는다
+
+        BST rsh = new Link_BST();
+        for (int i = 1; i < cnt+1; i++) {
+            for (int j = 1; j < cnt+1; j++) {
+                if (ords[j] == i) {
+                    rsh.insert(q[j].key, q[j].data);
+                    break;
+                }
+            }
+
+        }
+
+        return rsh;
+    }
+
+    private static int i_ord_ = 1;
+    private int[] ord_routine(int i_iter, int[] ords) {
+
+        if (i_iter == 0) {
+            return ords;
+        }
+
+        if (i_iter * 2 <= cnt) {
+            ords = ord_routine(i_iter * 2, ords);
+        }
+
+        ords[i_ord_] = i_iter;
+        i_ord_ += 1;
+
+        if (i_iter * 2 + 1 <= cnt) {
+            ords = ord_routine(i_iter * 2 + 1, ords);
+        }
+
+        return ords;
     }
 
     public String describe() {
@@ -594,14 +686,15 @@ public class DS_ch08 {
         /*
         System.out.println(lb.seek(13));
          */
-
+/*
         BST conc = lb.concat(lb2);
         System.out.println(conc.describe());
 
         BST[] spl = conc.split(38);
         System.out.println(spl[0].describe());
-        System.out.println(spl[1].describe());
+        System.out.println(spl[1].describe());*/
 
+        System.out.println(lb2.reshape().describe());
 
     }
 
