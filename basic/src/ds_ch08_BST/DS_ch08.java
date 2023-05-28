@@ -133,9 +133,12 @@ class Link_BST implements BST {
     }
 
     Node root;
+    int cnt, h;
 
     public Link_BST() {
         this.root = null;
+        this.cnt = 0;
+        this.h = 0;
     }
     private Link_BST(Node to_root) {
         this.root = to_root;
@@ -150,13 +153,19 @@ class Link_BST implements BST {
     public void insert(int key, Object data_in) {
         if (empty()) {
             root = new Node(key, data_in);
+            cnt++;
             return;
         }
 
         root = insert_routine(key, data_in, root);
+
+        if (cnt == Math.pow(2, h+1)) {
+            h++;
+        }
     }
     private Node insert_routine(int key, Object data_in, Node p) {
         if (p == null) {
+            cnt++;
             return new Node(key, data_in);
         }
         else if (p.key > key) {
@@ -187,6 +196,10 @@ class Link_BST implements BST {
                 방법 ? 오른쪽을 하나씩 땡겨오기 >>> 너무 복잡해보임
      */
         root = del_routine(key, root);
+        cnt--;
+        if (cnt == Math.pow(2, h)-1) {
+            h--;
+        }
     }
     private Node del_routine(int key, Node p) {
         // 탐색 단계
@@ -405,135 +418,96 @@ class Link_BST implements BST {
 
     @Override
     public BST reshape() {
+
         /*
+        수정 (052823)
+
+        중위순회를 이용해 재형성
+
         과정
-            1. this의 노드를 root부터 차례대로 큐에 넣는다
-            2. 다 넣으면 하나씩 꺼낸다
-            3. 넣을 때 위치를 조정하면서 넣는다
-
-        상세 (051223)
-            1. 큐에서 꺼낸 값p와 루트를 비교한다
-            2.
-                CASE 1. 루트 < p < 루트.right 일 경우 루트가 좌측 아래로 내려간다
-                CASE 2. 루트 < p 면서 p > 루트.right일 경우 p가 우측 아래로 내려간다
-                cASE 3. 루트 > p 일 경우 p가 좌측 아래로 내려간다
-            3. 이동한 노드는 이동한 위치에서 2를 반복한다
-            4. 이동한 노드가 리프 위치에 도달하면 반복을 종료한다
-
-        방법 변경 (051323)
-            1. 큐를 두 개 쓴다
-                큐 q: 역할은 이전과 동일
-                큐 r: 트리를 완전하게 만드는 역할. 즉 큐에서 peek 한 값의 자식이 다음에 노드가 들어가야 할 자리
-            2. 다음과 같이 정한다
-                qp = q에서 poll 한 노드
-                rp = r에서 peek 한 노드.
-                cmp = 비교 대상
-
-            3. 조건을 다음과 같이 한다
-                rp는 양쪽 자식이 null이 아니어야 큐에서 나올 수 있다
-                cmp는 바뀔 수 있다
-
-            4. 동작은 다음과 같이 한다
-                CASE 1. rp가 cmp의 왼쪽 서브트리에 있을 경우 (즉 rp < cmp)
-                    1. qp < cmp면 qp가 내려간다
-                    2. qp > cmp면 cmp가 내려가고 qp의 오른쪽은 원래 cmp의 오른쪽으로 한 다음 재조정한다
-                CASE 2. rp가 cmp의 오른쪽 서브트리에 있을 경우 (즉 rp > cmp)
-                    1. qp < cmp면 cmp가 내려가고 qp의 왼쪽은 원래 cmp의 왼쪽으로 한 다음 재조정한다
-                    2. qp > cmp면 qp가 내려간다
+            1. 트리 내의 노드 Node 배열 q에 다 빼낸다
+            2. 꺼낸 노드 수+1 과 길이가 같은 정수 배열 ords를 생성한다
+            3. q를 키 값 순으로 오름차순 정렬한다
+            4. ords의 값을 완전 이진 트리 중위 순회 시 방문 순서로 한다
+                ex.
+                    ords[1]: 2^h ( < cnt)
+                    ords[2]: 2^(h-1)
+                    ords[3]: 2^h +1
+                    ...
+                    ords[LENGTH]: cnt
+            5. 재형성 결과를 저장할 트리 rsh에 q[ord[1]], q[ord[2]] 순으로 집어넣는다
          */
 
-        Link_BST reshaped = new Link_BST();
-        Queue<Node> q = new LinkedList<>();
-        Queue<Node> r = new LinkedList<>();
-        Node qp, rp;
-        q.add(this.root);
+        Queue<Node> tq = new LinkedList<>();
+        Node[] q = new Node[cnt+1];
+        int[] ords = new int[cnt+1];
+        int qi = 1;
+        tq.add(this.root);
 
-        while (!q.isEmpty()) {
-            qp = q.poll();
-            if (qp.left != null) {
-                q.add(qp.left);
-            }
-            if (qp.right != null) {
-                q.add(qp.right);
-            }
+        // 1. 트리 내의 노드 Node 배열 q에 다 빼낸다
 
-            reshaped.root = reshaping_routine(new Node(qp.key, qp.data), reshaped.root, r);
+        while (!tq.isEmpty()) {
 
-            if (r.peek().left != null && r.peek().right != null) {
-                r.remove();
+            q[qi] = tq.poll();
+
+            if (q[qi].left != null) { tq.add(q[qi].left); }
+            if (q[qi].right != null) { tq.add(q[qi].right); }
+
+            qi++;
+        }
+
+        // 2. ords 값을 완전 이진 트리 중위 순회 시 방문 순서로 한다
+
+        int i_iter = 1;
+        ords = ord_routine(i_iter, ords);
+
+        // 3. q를 키 값 순으로 오름차순 정렬한다
+
+        for (int i = 1; i < q.length; i++) {
+            for (int j = i; j < q.length; j++) {
+                if (q[i].key > q[j].key) {
+                    Node tn = q[i];
+                    q[i] = q[j];
+                    q[j] = tn;
+                }
             }
         }
 
-        return reshaped;
+        // 4. 재형성 결과를 저장할 트리 rsh에 q[ord[1]], q[ord[2]] 순으로 집어넣는다
+
+        BST rsh = new Link_BST();
+        for (int i = 1; i < cnt+1; i++) {
+            for (int j = 1; j < cnt+1; j++) {
+                if (ords[j] == i) {
+                    rsh.insert(q[j].key, q[j].data);
+                    break;
+                }
+            }
+
+        }
+
+        return rsh;
     }
-    private Node reshaping_routine(Node qp, Node cmp, Queue<Node> r) {
 
-        /*if (cmp == null) {
-            return polled;
-        }
+    private static int i_ord_ = 1;
+    private int[] ord_routine(int i_iter, int[] ords) {
 
-        if (polled.key < cmp.key) {
-            cmp.left = reshaping_routine(polled, cmp.left, r);
-            return cmp;
-        }
-        else if (polled.key > cmp.key) {
-            cmp.right = reshaping_routine(polled, cmp.right, r);
-            return cmp;
+        if (i_iter == 0) {
+            return ords;
         }
 
-        if ((cmp.left != null) && (cmp.key < polled.key) && (polled.key < cmp.right.key)) {
-            polled.right = cmp.right;
-            polled.left = reshaping_routine(cmp, cmp.left, r);
-            return polled;
+        if (i_iter * 2 <= cnt) {
+            ords = ord_routine(i_iter * 2, ords);
         }
 
-        if ((cmp.right != null) && (cmp.key < polled.key) && (polled.key < cmp.right.key)) {
-            polled.left = cmp.left;
-            polled.right = cmp.right;
-            cmp.left = reshaping_routine(cmp, cmp.left, r);
-            return polled;
-        }*/
+        ords[i_ord_] = i_iter;
+        i_ord_ += 1;
 
-        if (cmp == null) {
-            Node n = new Node(qp.key, qp.data);
-            r.add(n);
-            return n;
+        if (i_iter * 2 + 1 <= cnt) {
+            ords = ord_routine(i_iter * 2 + 1, ords);
         }
 
-        Node rp = r.peek();
-
-        if (rp.key < cmp.key) {
-            if (qp.key < cmp.key) {
-                cmp.left = reshaping_routine(qp, cmp.left, r);
-                return cmp;
-            }
-            else {
-                qp.left = reshaping_routine(cmp, cmp.left, r);
-                qp.right = reshaping_routine(qp, cmp.right, r);
-                return qp;
-            }
-        }
-        else if (rp.key > cmp.key) {
-            if (qp.key < cmp.key) {
-                qp.left = reshaping_routine(qp, cmp.left, r);
-                qp.right = reshaping_routine(cmp, cmp.right, r);
-                return qp;
-            }
-            else {
-                cmp.right = reshaping_routine(qp, cmp.right, r);
-                return cmp;
-            }
-        }
-        else {
-            if (qp.key < cmp.key) {
-                cmp.left = reshaping_routine(qp, cmp.left, r);
-                return cmp;
-            }
-            else {
-                cmp.right = reshaping_routine(qp, cmp.right, r);
-                return cmp;
-            }
-        }
+        return ords;
     }
 
     public String describe() {
@@ -712,18 +686,16 @@ public class DS_ch08 {
         /*
         System.out.println(lb.seek(13));
          */
-
+/*
         BST conc = lb.concat(lb2);
         System.out.println(conc.describe());
 
-        /*
         BST[] spl = conc.split(38);
         System.out.println(spl[0].describe());
-        System.out.println(spl[1].describe());
-        */
+        System.out.println(spl[1].describe());*/
 
-        BST resh = lb.reshape();
-        System.out.println(resh.describe());
+        System.out.println(lb2.reshape().describe());
+
     }
 
 
