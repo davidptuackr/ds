@@ -55,7 +55,6 @@ BST 외 힙 추가사항: 우선순위 큐(힙을 쓰는 별도 클래스로 제
 - 이진 탐색 트리가 균형되도록 삽입하는 balanced_insert 
  */
 
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -85,17 +84,25 @@ class List_BST implements BST {
 
     }
 
-    int h;
-    int cnt;
+    private int h;
+    private int cnt;
     private Node root;
     private Node[] tree;
 
     public List_BST(int max_h) {
-        this.tree = new Node[(int) Math.pow(2, max_h)];
+        this.tree = new Node[(int) Math.pow(2, max_h + 1) - 1];
         this.root = tree[0];
         this.cnt = 0;
         this.h = 0;
     }
+
+    /*
+    배열 내 이동 방법
+        부모 >>> 좌측 자식: (i+1)*2-1
+        부모 >>> 좌측 자식: (i+1)*2
+        좌측 자식 >>> 부모: (i-1)/2
+        우측 자식 >>> 부모: (i-1)*2-1
+     */
 
     @Override
     public boolean empty() {
@@ -115,29 +122,32 @@ class List_BST implements BST {
                 - 자리가 없다면 (1. 배열 확장, 2. 삽입 재시도, 3. 원소 수 증가, 4. 종료) 순으로 작업한다
                 - 이미 있는 원소는 (1. 삽입 불가를 알림, 2. 종료) 순으로 작업한다
 
-            상세 (ADL)
-                삽입(키, 데이터) {
-                    if empty tree :
-                        루트(==tree[0]) = (키, 데이터)
-                        삽입 종료
+            ADL 삽입(키, 데이터) {
+                if empty tree :
+                    루트(==tree[0]) = (키, 데이터)
+                    삽입 종료
 
-                    자리찾기 과정
-                        1. 루트랑 비교했을 때
-                            키가 작다면 왼쪽 자식과 다시 비교
-                            키가 크다면 오른쪽 자식과 다시 비교
-                        2. 비교 대상이
-                            null이 아니면 null이 아닐 때까지 이동 + 비교
-                            null이면 해당 위치에 삽입
-                        3. 더 이상 비교할 수가 없다면 == 자리가 없다면
-                            배열 확장 후 삽입 재시도
+                int i_cmp = 0 >>> 배열 내 비교할 원소의 인덱스
 
-                    자리를 잡고 나면 원소 수 +1
-                    종료
-                }
+                while ((i_cmp < 현재 배열 길이) AND (tree[i_cmp] is not null)) :
+                    if tree[i_cmp] > key : i_cmp = i_cmp*2 + 1
+                    else if tree[i_cmp] < key : i_cmp = i_cmp * 2 + 2
+                    else : // 키가 이미 있는 경우
+                        삽입 불가 알림 후 종료
+
+                if i_cmp > 현재 배열 길이 : // 트리 확장 후 삽입
+                    트리 확장;
+
+                tree[i_cmp]에 삽입
+                원소 수 +1
+            }
+
+            ADL private 확장(확장 배열, n_iter: 중위 순회 시 활용할 인덱스 전달용 매개변수) {
+                재귀 + 중위 순회 활용하여 (기존 배열)*2 크기 배열에 기존 위치에 맞게 원소 복사
+            }
          */
 
-
-        if (this.empty()) {
+        if (empty()) {
             tree[0] = new Node(key, data_in);
             cnt++;
             return;
@@ -145,35 +155,37 @@ class List_BST implements BST {
 
         int i_cmp = 0;
 
-        while (i_cmp < tree.length) {
-            if (tree[i_cmp].key == key) {
+        while ((i_cmp < tree.length) && (tree[i_cmp] != null)) {
+            if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
+                i_cmp = (i_cmp + 1) * 2 - 1;
+            }
+            else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
+                i_cmp = (i_cmp + 1) * 2;
+            }
+            else {                              // 이미 있는 키라면 종료
                 System.out.printf("UNABLE TO INSERT (%d, %s). KEY %d IS ALREADY EXISTS\n", key, data_in, key);
                 return;
             }
-
-            if (tree[i_cmp] == null) {
-                tree[i_cmp] = new Node(key, data_in);
-                return;
-            }
-
-            i_cmp = (tree[i_cmp].key > key) ? (i_cmp + 1) * 2 - 1 : (i_cmp + 1) * 2;
         }
 
-        int i_iter = 1;
-        Node[] tree_exp = new Node[tree.length * 2];
-        tree_exp = exp_routine(tree_exp, i_iter);
-
-        tree = tree_exp;
+        // 공간이 없다면 지금은 확장 (아니면 reshape)
+        if (i_cmp > tree.length) {
+            tree = exp_routine(new Node[tree.length * 2 + 1], 0);
+        }
         tree[i_cmp] = new Node(key, data_in);
+        cnt++;
     }
     private Node[] exp_routine(Node[] tree_exp, int i_iter) {
 
-        if ((i_iter * 2 + 1 < tree.length) && (tree_exp[i_iter * 2 + 1] != null)) {
-            tree_exp = exp_routine(tree_exp, i_iter * 2 + 1);
+        int i_next = (i_iter + 1) * 2 - 1;
+        if ((i_next < tree.length) && (tree[i_next] != null)) {
+            tree_exp = exp_routine(tree_exp, i_next);
         }
+
         tree_exp[i_iter] = new Node(tree[i_iter].key, tree[i_iter].data);
-        if ((i_iter * 2 + 1 < tree.length) && (tree_exp[(i_iter + 1) * 2] != null)) {
-            tree_exp = exp_routine(tree_exp, i_iter * 2 + 1);
+
+        if ((i_next + 1 < tree.length) && (tree[i_next + 1] != null)) {
+            tree_exp = exp_routine(tree_exp, i_next + 1);
         }
 
         return tree_exp;
@@ -181,7 +193,87 @@ class List_BST implements BST {
 
     @Override
     public void delete(int key) {
+        /*
+        순차 표현으로 구현한 이진 탐색 트리에서의 삭제
 
+            과정
+                - 빈 트리면 빈 트리임을 알리고 종료한다
+                - 아니면 쭉 돌아다니면서 삭제 대상이 있는지 찾아본다
+                - 찾아냈다면 (1. 삭제, 2. 빈 자리 보충, 3. 원소 수 감소, 4. 종료) 순으로 작업한다
+                - 없다면 (1. 없다고 알림, 2. 종료) 순으로 작업한다
+
+            ADL 삭제(키) {
+                if empty tree :
+                    빈 트리임을 알리고 종료
+
+                int i_cmp = 0 >>> 배열 내 비교할 원소의 인덱스
+
+                while ((i_cmp < 현재 배열 길이) AND (tree[i_cmp].key 가 찾는 키와 같지 않을 동안)) :
+                    if tree[i_cmp] > key : i_cmp = i_cmp*2 + 1
+                    else if tree[i_cmp] < key : i_cmp = i_cmp * 2 + 2
+                    else : // 키가 이미 있는 경우
+                        삽입 불가 알림 후 종료
+
+                if i_cmp >= 현재 배열 길이 : // 찾는 값이 없을 때
+                    찾는 값이 없다고 알린 후 종료
+
+                tree[i_cmp] = 보충()
+                원소 수 -1
+            }
+
+            ADL private 보충(i_iter: 순회 시 활용할 인덱스 전달용 매개변수) {
+                if (단말일 때 >>> i_cmp * 2 + 1 > 배열 길이인지 비교) :
+                    return null
+                else if (자식이 하나일 때 >>> 둘 중 하나만 null인지 검사) :
+                    한 레벨씩 당겨오기
+                else if (자식이 둘일 때) :
+                    방법 1. 왼쪽 최대를 가져와서 보충하기 >>> 왼쪽 자식으로 내려간 뒤 오른쪽으로만 계속 이동
+                    방법 2. 오른쪽 최소를 가져와서 보충하기 >>> 오른쪽 자식으로 내려간 뒤 왼쪽으로만 계속 이동
+            }
+         */
+
+        if (empty()) {
+            System.out.println("UNABLE TO DELETE. TREE IS EMPTY");
+        }
+        else {
+            int i_cmp = 0;
+
+            while ((i_cmp < tree.length) && (tree[i_cmp].key != key)) {
+                if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
+                    i_cmp = (i_cmp + 1) * 2 - 1;
+                }
+                else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
+                    i_cmp = (i_cmp + 1) * 2;
+                }
+            }
+            if (i_cmp >= tree.length) {
+                System.out.printf("KEY %d NOT IN TREE \n", key);
+            }
+            else if ((i_cmp * 2) - 1 >= tree.length) { // 단말일 경우
+                tree[i_cmp] = null;
+            }
+            else if ( // 자식이 둘 다 있을 경우
+                    ((tree[(i_cmp + 1) * 2 - 1] != null) && (tree[(i_cmp + 1) * 2] != null))
+            ) {
+              tree[i_cmp] = del_dc_routine((i_cmp + 1) * 2 - 1);
+            }
+            else { // 자식이 하나만 있을 경우
+                del_sc_routine(i_cmp);
+            }
+        }
+    }
+
+    private void del_sc_routine(int i_rpl) {
+
+    }
+
+    private Node del_dc_routine(int i_lmax) {
+
+        while ((i_lmax + 1) * 2 < tree.length) {
+            i_lmax = (i_lmax + 1) * 2;
+        }
+
+        return null;
     }
 
     @Override
@@ -664,7 +756,7 @@ public class DS_ch08 {
 
         Random ran = new Random(273);
 
-        BST lb = new Link_BST();
+        /*BST lb = new Link_BST();
         BST lb2 = new Link_BST();
 
         for (int i = 0; i < 10; i++) {
@@ -674,7 +766,7 @@ public class DS_ch08 {
         for (int i = 0; i < 15; i++) {
             int x = ran.nextInt(100);
             lb2.insert(x, x);
-        }
+        }*/
 
         /*
         System.out.println(lb.describe());
@@ -689,7 +781,7 @@ public class DS_ch08 {
         /*
         System.out.println(lb.seek(13));
          */
-/*
+        /*
         BST conc = lb.concat(lb2);
         System.out.println(conc.describe());
 
@@ -697,8 +789,12 @@ public class DS_ch08 {
         System.out.println(spl[0].describe());
         System.out.println(spl[1].describe());*/
 
-        System.out.println(lb2.reshape().describe());
+        BST lb = new List_BST(3);
 
+        for (int i = 0; i < 12; i++) {
+            int x = ran.nextInt(100);
+            lb.insert(x, x);
+        }
     }
 
 
