@@ -101,7 +101,7 @@ class List_BST implements BST {
         부모 >>> 좌측 자식: (i+1)*2-1
         부모 >>> 좌측 자식: (i+1)*2
         좌측 자식 >>> 부모: (i-1)/2
-        우측 자식 >>> 부모: (i-1)*2-1
+        우측 자식 >>> 부모: (i)/2-1
      */
 
     @Override
@@ -217,63 +217,151 @@ class List_BST implements BST {
                 if i_cmp >= 현재 배열 길이 : // 찾는 값이 없을 때
                     찾는 값이 없다고 알린 후 종료
 
-                tree[i_cmp] = 보충()
+                (수정: 060223)
+                else if 단말일 때(==자식이 없을 때):
+                    tree[i_cmp] = null
+                else : >>> 자식이 하나 있을 때
+                    (우측 최소도 가능하지만 일단)
+                    지울 노드의 좌측 최대 탐색
+                    if 좌측 최대가 좌측 자식이 있다면 :
+                        좌측 서브트리 끌어올리기
+
                 원소 수 -1
             }
 
-            ADL private 보충(i_iter: 순회 시 활용할 인덱스 전달용 매개변수) {
-                if (단말일 때 >>> i_cmp * 2 + 1 > 배열 길이인지 비교) :
-                    return null
-                else if (자식이 하나일 때 >>> 둘 중 하나만 null인지 검사) :
-                    한 레벨씩 당겨오기
-                else if (자식이 둘일 때) :
-                    방법 1. 왼쪽 최대를 가져와서 보충하기 >>> 왼쪽 자식으로 내려간 뒤 오른쪽으로만 계속 이동
-                    방법 2. 오른쪽 최소를 가져와서 보충하기 >>> 오른쪽 자식으로 내려간 뒤 왼쪽으로만 계속 이동
+            ADL private 레벨 변경(int i: 끌어올릴 서브트리 루트) {
+                큐 준비 >>> 레벨 순서로 보충해야 하기 때문
+                큐에 서브트리 루트 인덱스 먼저 삽입
+                i_sbtr = i; >>> tree에서 서브트리 원소들의 인덱스
+
+                while (서브트리 노드 전부 위치를 바꿀 때까지) :
+                    i_sbtr = deq
+
+                    if (i_sbtr+1 * 2)-1 != null : >>> 좌측 자식이 있다면
+                        enq (i_sbtr+1 * 2)-1
+
+                    if (i_sbtr+1 * 2) != null : >>> 우측 자식이 있다면
+                        enq (i_sbtr+1 * 2)
+
+                    if (i_sbtr % 2 == == 1) : >>> 좌측이었다면
+                        tree[(i_sbtr)/2]에 보충
+                    else : >>> 우측이었다면
+                        tree[(i_sbtr-1)/2+1]에 보충
             }
+         */
+
+        /* 아이디어 (060123)
+        자식이 하나건 둘이건 어차피 밑에있는 것은 다 끌어 올려야 한다
+        그럼 그냥 아래 있는 애들을 level order 순회하듯이 넣으면 되는 것 아닌가?
+         */
+        /*
+        아이디어 2(060123)
+        자식이 하나건 둘이건 그냥 '한 줄'만 끌어올려도 되지 않을까?
+        끌어올리는건 왼쪽 슬로프 / 오른쪽 슬로프 로 하고, 중간에 슬로프가 끊기면 옆에 자식 노드로 이어서 하면 되고
+         */
+        /*
+        생각난 문제 (053123)
+            자식이 둘인 노드를 삭제하는 경우
+            왼쪽 최대 / 오른쪽 최소가 자식이 있다면?
+            그러니까
+                좌측 최대: 왼쪽 자식이 있는 경우
+                우측 최소: 우측 자식이 있는 경우
+                >>> 이러면 그 자식들은 부모를 잃게 되는 격
+
+            해결방안 1 >>> XXX
+                1. 좌측 최대는 좌측 자식 / 우측 최소는 우측 자식이 있는지 검사한다
+                2. 있다면 삭제할 노드 자리 보충이 끝난 뒤 올려준다
+
+            해결방안 2 >>> XXX
+                1. 아이디어 2에서 이야기한 것과 같이 슬로프를 끌어올린다
+                    이 때 좌측 서브트리의 오른쪽 슬로프를 쓴다
+
+
+        전체 해결방안
+            삭제할 노드가
+                자식이 하나면 그 자식+자식의 서브트리를 끌어올리고
+                자식이 둘이면
+                    좌측 최대 / 우측 최소를 삭제 위치로 가져온 다음
+                    좌측 최대는 좌측 서브트리가 있다면 / 우측 최소는 우측 서브트리가 있다면
+                    자식이 하나인 노드를 삭제할 때처럼 서브트리를 끌어올린다
+
+        자식이 하나건 둘이건 한 쪽 서브트리를 끌어올리는 작업과 좌측 최대 / 우측 최소를 찾는 작업이 필요하다 !!!
          */
 
         if (empty()) {
             System.out.println("UNABLE TO DELETE. TREE IS EMPTY");
+            return;
         }
-        else {
-            int i_cmp = 0;
 
-            while ((i_cmp < tree.length) && (tree[i_cmp].key != key)) {
-                if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
-                    i_cmp = (i_cmp + 1) * 2 - 1;
-                }
-                else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
-                    i_cmp = (i_cmp + 1) * 2;
-                }
+        int i_cmp = 0;
+
+        while ((i_cmp < tree.length) && (tree[i_cmp].key != key)) {
+            if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
+                i_cmp = (i_cmp + 1) * 2 - 1;
             }
-            if (i_cmp >= tree.length) {
-                System.out.printf("KEY %d NOT IN TREE \n", key);
-            }
-            else if ((i_cmp * 2) - 1 >= tree.length) { // 단말일 경우
-                tree[i_cmp] = null;
-            }
-            else if ( // 자식이 둘 다 있을 경우
-                    ((tree[(i_cmp + 1) * 2 - 1] != null) && (tree[(i_cmp + 1) * 2] != null))
-            ) {
-              tree[i_cmp] = del_dc_routine((i_cmp + 1) * 2 - 1);
-            }
-            else { // 자식이 하나만 있을 경우
-                del_sc_routine(i_cmp);
+            else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
+                i_cmp = (i_cmp + 1) * 2;
             }
         }
+        if (i_cmp >= tree.length) {
+            System.out.printf("KEY %d NOT IN TREE \n", key);
+        }
+        else if (
+                ((i_cmp * 2) - 1 >= tree.length)
+                || (tree[(i_cmp + 1) * 2 - 1] == null && tree[(i_cmp + 1) * 2] == null)
+        ) { // 단말일 경우
+            tree[i_cmp] = null;
+        }
+        else { // 자식이 있을 경우
+            int i_lmax = (i_cmp + 1) * 2 - 1;
+            while (((i_lmax + 1) * 2 < tree.length) && (tree[(i_lmax + 1) * 2] != null)) {
+                i_lmax = (i_lmax + 1) * 2;
+            }
+
+            if (tree[i_lmax] == null) { // 삭제할 노드에 좌측 서브트리가 없다면 우측 서브트리 끌어올리기
+                lvl_routine(i_cmp, (i_cmp + 1) * 2);
+            }
+            else if (tree[(i_lmax + 1) * 2 - 1] != null) {
+                // 좌측 최대에 좌측 서브트리가 있다면 좌측 최대 위치로 서브트리를 끌어올리고 삭제할 노드 위치에 좌측 최대 보충
+                tree[i_cmp] = new Node(tree[i_lmax].key, tree[i_lmax].data);
+                lvl_routine(i_lmax, (i_lmax + 1) * 2 - 1);
+            }
+            else {
+                tree[i_cmp] = new Node(tree[i_lmax].key, tree[i_lmax].data);
+                tree[i_lmax] = null;
+            }
+
+        }
+        cnt--;
     }
 
-    private void del_sc_routine(int i_rpl) {
+    private void lvl_routine(int rploc_strt, int iter_strt) {
 
-    }
+        Queue<Integer> q_iter = new LinkedList<>();
+        Queue<Integer> q_rp = new LinkedList<>();
+        int i_iter = iter_strt;
+        int i_rploc = rploc_strt;
 
-    private Node del_dc_routine(int i_lmax) {
+        q_iter.add(i_iter);
+        q_rp.add(i_rploc);
 
-        while ((i_lmax + 1) * 2 < tree.length) {
-            i_lmax = (i_lmax + 1) * 2;
+        while (i_iter < tree.length && !q_iter.isEmpty() && !q_rp.isEmpty()) {
+            i_iter = q_iter.poll();
+            i_rploc = q_rp.poll();
+
+            if (((i_iter+1)*2-1 < tree.length) && (tree[(i_iter+1)*2-1] != null)) {
+                q_iter.add((i_iter+1)*2-1);
+                q_rp.add((i_rploc+1)*2-1);
+
+            }
+            if (((i_iter+1)*2 < tree.length) && (tree[(i_iter+1)*2] != null)) {
+                q_iter.add((i_iter+1)*2);
+                q_rp.add((i_rploc+1)*2);
+            }
+
+            tree[i_rploc] = new Node(tree[i_iter].key, tree[i_iter].data);
+            tree[i_iter] = null;
         }
-
-        return null;
     }
 
     @Override
@@ -795,6 +883,14 @@ public class DS_ch08 {
             int x = ran.nextInt(100);
             lb.insert(x, x);
         }
+
+        /* 테스트 대상
+            19 >>> 좌측이 있는데 하나만 있는 경우 O
+            35 >>> 좌측 서브트리를 끌어올려야 함 O
+            71 >>> 우측만 있는 경우 (즉 좌측이 null) (O)
+            96 >>> 단말 (O)
+         */
+        lb.delete(9);
     }
 
 
