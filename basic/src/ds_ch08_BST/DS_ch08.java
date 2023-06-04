@@ -344,11 +344,50 @@ class List_BST implements BST {
 
     @Override
     public Object seek(int key) {
-        return null;
+
+        // 탐색은 쉬우니까 별도로 남기지 않음 (060423)
+
+        if (empty()) {
+            System.out.println("UNABLE TO SEEK. TREE IS EMPTY");
+            return null;
+        }
+
+        int i_iter = 0;
+
+        while ((i_iter < tree.length) && (tree[i_iter].key != key)) {
+            if (tree[i_iter].key > key) {
+                i_iter = (i_iter + 1) * 2 - 1;
+            }
+            else {
+                i_iter = (i_iter + 1) * 2;
+            }
+        }
+
+        return i_iter < tree.length ? tree[i_iter].data : null;
     }
 
     @Override
     public BST concat(BST other) {
+
+        /*
+        메소드를 호출한 트리와 다른 트리를 합친 트리를 반환하는 메소드
+        
+        과정
+            1. this를 conc에 복사한다
+            2. conc에 other를 하나씩 삽입한다
+         */
+        
+        BST conc;
+
+        Queue<Node> q = new LinkedList<>();
+        int i_iter = 0;
+        
+        q.add(((List_BST) other).tree[i_iter]);
+        
+        while (!q.isEmpty()) {
+            
+        }
+        
         return null;
     }
 
