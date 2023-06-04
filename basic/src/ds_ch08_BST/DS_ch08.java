@@ -216,76 +216,54 @@ class List_BST implements BST {
 
                 if i_cmp >= 현재 배열 길이 : // 찾는 값이 없을 때
                     찾는 값이 없다고 알린 후 종료
-
-                (수정: 060223)
                 else if 단말일 때(==자식이 없을 때):
                     tree[i_cmp] = null
-                else : >>> 자식이 하나 있을 때
-                    (우측 최소도 가능하지만 일단)
-                    지울 노드의 좌측 최대 탐색
-                    if 좌측 최대가 좌측 자식이 있다면 :
-                        좌측 서브트리 끌어올리기
+                else : >>> 자식이 하나 이상 있을 때
+                    int i_lmax = i_cmp의 좌측 자식부터 시작 (우측 최소도 가능)
+                    i_lmax에서 오른쪽 자식이 없을 때까지 좌측 최대 갱신
+                    
+                    if i_lmax가 null일 경우 : >>> i_cmp가 오른쪽 자식만 있을 경우
+                        끌어올리기(rploc_strt: i_cmp, iter_strt: 우측 자식) >>> i_cmp의 우측 서브트리를 끌어올린다
+                    else if 좌측 최대에 좌측 서브트리가 있다면 : 
+                        tree[i_cmp] = tree[i_lmax]
+                        끌어올리기(rploc_strt: i_lmax, iter_strt: i_lmax 좌측 자식)
+                    else : >>> 단말이라면
+                        tree[i_cmp] = null
 
                 원소 수 -1
+                종료
             }
 
-            ADL private 레벨 변경(int i: 끌어올릴 서브트리 루트) {
-                큐 준비 >>> 레벨 순서로 보충해야 하기 때문
-                큐에 서브트리 루트 인덱스 먼저 삽입
-                i_sbtr = i; >>> tree에서 서브트리 원소들의 인덱스
+            ADL private 끌어올리기(int rploc_strt: 처음 끌어올릴 위치, int iter_strt: 서브트리 시작 위치) {
+                큐 q_rploc: 끌어올릴 위치 큐
+                큐 q_iter: 삽입할 서브트리 위치 큐
+                int i_rploc = rploc_strt: 끌어올릴 위치
+                int i_iter = iter_strt: 삽입할 서브트리 위치
+                
+                q_rploc에 i_rploc 삽입
+                q_iter에 i_iter 삽입
+                
+                while (
+                        1. i_iter < 트리 최대 길이
+                    AND 2. q_rploc에 원소가 있고
+                    AND 3. q_iter에 원소가 있는 동안
+                ) :
+                    i_rploc = deq q_rploc
+                    i_iter = deq q_iter
 
-                while (서브트리 노드 전부 위치를 바꿀 때까지) :
-                    i_sbtr = deq
+                    if (i_iter+1 * 2)-1 != null : >>> 좌측 자식이 있다면
+                        enq (i_iter+1 * 2)-1 IN q_iter
+                        enq (i_rploc+1 * 2)-1 IN q_rploc
 
-                    if (i_sbtr+1 * 2)-1 != null : >>> 좌측 자식이 있다면
-                        enq (i_sbtr+1 * 2)-1
+                    if (i_iter+1 * 2) != null : >>> 우측 자식이 있다면
+                        enq (i_iter+1 * 2)
+                        enq (i_rploc+1 * 2) IN q_rploc
 
-                    if (i_sbtr+1 * 2) != null : >>> 우측 자식이 있다면
-                        enq (i_sbtr+1 * 2)
+                    tree[i_rploc] = new Node(i_iter 키, i_iter 데이터) >>> rploc이 null일 수 있으므로 새 노드를 만드는 것
+                    tree[i_iter] = null
 
-                    if (i_sbtr % 2 == == 1) : >>> 좌측이었다면
-                        tree[(i_sbtr)/2]에 보충
-                    else : >>> 우측이었다면
-                        tree[(i_sbtr-1)/2+1]에 보충
+                종료
             }
-         */
-
-        /* 아이디어 (060123)
-        자식이 하나건 둘이건 어차피 밑에있는 것은 다 끌어 올려야 한다
-        그럼 그냥 아래 있는 애들을 level order 순회하듯이 넣으면 되는 것 아닌가?
-         */
-        /*
-        아이디어 2(060123)
-        자식이 하나건 둘이건 그냥 '한 줄'만 끌어올려도 되지 않을까?
-        끌어올리는건 왼쪽 슬로프 / 오른쪽 슬로프 로 하고, 중간에 슬로프가 끊기면 옆에 자식 노드로 이어서 하면 되고
-         */
-        /*
-        생각난 문제 (053123)
-            자식이 둘인 노드를 삭제하는 경우
-            왼쪽 최대 / 오른쪽 최소가 자식이 있다면?
-            그러니까
-                좌측 최대: 왼쪽 자식이 있는 경우
-                우측 최소: 우측 자식이 있는 경우
-                >>> 이러면 그 자식들은 부모를 잃게 되는 격
-
-            해결방안 1 >>> XXX
-                1. 좌측 최대는 좌측 자식 / 우측 최소는 우측 자식이 있는지 검사한다
-                2. 있다면 삭제할 노드 자리 보충이 끝난 뒤 올려준다
-
-            해결방안 2 >>> XXX
-                1. 아이디어 2에서 이야기한 것과 같이 슬로프를 끌어올린다
-                    이 때 좌측 서브트리의 오른쪽 슬로프를 쓴다
-
-
-        전체 해결방안
-            삭제할 노드가
-                자식이 하나면 그 자식+자식의 서브트리를 끌어올리고
-                자식이 둘이면
-                    좌측 최대 / 우측 최소를 삭제 위치로 가져온 다음
-                    좌측 최대는 좌측 서브트리가 있다면 / 우측 최소는 우측 서브트리가 있다면
-                    자식이 하나인 노드를 삭제할 때처럼 서브트리를 끌어올린다
-
-        자식이 하나건 둘이건 한 쪽 서브트리를 끌어올리는 작업과 좌측 최대 / 우측 최소를 찾는 작업이 필요하다 !!!
          */
 
         if (empty()) {
@@ -890,7 +868,7 @@ public class DS_ch08 {
             71 >>> 우측만 있는 경우 (즉 좌측이 null) (O)
             96 >>> 단말 (O)
          */
-        lb.delete(9);
+        lb.delete(35);
     }
 
 
