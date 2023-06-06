@@ -91,9 +91,9 @@ class List_BST implements BST {
 
     public List_BST(int max_h) {
         this.tree = new Node[(int) Math.pow(2, max_h + 1) - 1];
-        this.root = tree[0];
+        this.root = null;
         this.cnt = 0;
-        this.h = 0;
+        this.h = max_h;
     }
 
     /*
@@ -149,6 +149,7 @@ class List_BST implements BST {
 
         if (empty()) {
             tree[0] = new Node(key, data_in);
+            root = tree[0];
             cnt++;
             return;
         }
@@ -171,6 +172,7 @@ class List_BST implements BST {
         // 공간이 없다면 지금은 확장 (아니면 reshape)
         if (i_cmp > tree.length) {
             tree = exp_routine(new Node[tree.length * 2 + 1], 0);
+            h++;
         }
         tree[i_cmp] = new Node(key, data_in);
         cnt++;
@@ -268,6 +270,13 @@ class List_BST implements BST {
 
         if (empty()) {
             System.out.println("UNABLE TO DELETE. TREE IS EMPTY");
+            return;
+        }
+
+        if (cnt == 1) {
+            tree[0] = null;
+            root = null;
+            cnt--;
             return;
         }
 
@@ -377,33 +386,175 @@ class List_BST implements BST {
             2. conc에 other를 하나씩 삽입한다
          */
         
-        BST conc;
-
-        Queue<Node> q = new LinkedList<>();
+        BST conc = new List_BST(this.h);
+        Queue<Integer> q = new LinkedList<>();
         int i_iter = 0;
-        
-        q.add(((List_BST) other).tree[i_iter]);
+
+        q.add(i_iter);
         
         while (!q.isEmpty()) {
-            
+            i_iter = q.poll();
+            conc.insert(tree[i_iter].key, tree[i_iter].data);
+
+            if ((i_iter * 2 < tree.length) && (tree[(i_iter + 1) * 2 - 1] != null)) {
+                q.add((i_iter + 1) * 2 - 1);
+            }
+            if ((i_iter * 2 < tree.length) && (tree[(i_iter + 1) * 2] != null)) {
+                q.add((i_iter + 1) * 2);
+            }
+        }
+
+        i_iter = 0;
+        q.add(i_iter);
+
+        while (!q.isEmpty()) {
+            i_iter = q.poll();
+
+            conc.insert(((List_BST) other).tree[i_iter].key, ((List_BST) other).tree[i_iter].data);
+
+            if ((i_iter * 2 < ((List_BST) other).tree.length) && (((List_BST) other).tree[(i_iter + 1) * 2 - 1] != null)) {
+                q.add((i_iter + 1) * 2 - 1);
+            }
+            if ((i_iter * 2 < ((List_BST) other).tree.length) && (((List_BST) other).tree[(i_iter + 1) * 2] != null)) {
+                q.add((i_iter + 1) * 2);
+            }
         }
         
-        return null;
+        return conc;
     }
 
     @Override
     public BST[] split(int key) {
-        return new BST[0];
+
+        if (empty()) {
+            System.out.println("UNABLE TO SPLIT. TREE IS EMPTY");
+            return null;
+        }
+
+        Object seek = seek(key);
+        if (seek == null) {
+            System.out.printf("UNABLE TO SPLIT. KEY %d DOES NOT IN TREE\n", key);
+            return null;
+        }
+
+        List_BST lower = new List_BST(h);
+        List_BST higher = new List_BST(h);
+        Queue<Integer> q = new LinkedList<>();
+        int i_iter = 0;
+
+        q.add(i_iter);
+
+        while (!q.isEmpty()) {
+            i_iter = q.poll();
+
+            if (tree[i_iter].key < key) {
+                lower.insert(tree[i_iter].key, tree[i_iter].data);
+            }
+            else if (tree[i_iter].key > key) {
+                higher.insert(tree[i_iter].key, tree[i_iter].data);
+            }
+
+            if ((i_iter * 2 < tree.length) && (tree[(i_iter + 1) * 2 - 1] != null)) {
+                q.add((i_iter + 1) * 2 - 1);
+            }
+            if ((i_iter * 2 < tree.length) && (tree[(i_iter + 1) * 2] != null)) {
+                q.add((i_iter + 1) * 2);
+            }
+        }
+        return new List_BST[] {lower, higher};
     }
 
     @Override
     public BST reshape() {
-        return null;
+        /*
+        과정
+        1. 배열 tree 내 원소 키 순으로 오름차순 정렬
+        2. cnt 개 원소를 가진 트리 중위 순회 결과 산출
+        3. 길이 cnt 배열 생성
+        4. 빈 배열[순회 결과[0]] = 정렬[0]
+        5. 배열[0]부터 순서대로 삽입
+         */
+        if (empty()) {
+            System.out.println("UNABLE TO RESHAPE. TREE IS EMPTY");
+            return null;
+        }
+        BST rsh = new List_BST((int) Math.ceil(Math.log(cnt)));
+        Queue<Integer> q = new LinkedList<>();
+        int i_iter = 0;
+        Node[] nt = new Node[cnt];
+        Node[] mty = new Node[cnt];
+        int[] ords = new int[cnt];
+
+        q.add(i_iter);
+
+        for (int i = 0; i < cnt; i++) {
+            i_iter = q.poll();
+            nt[i] = tree[i_iter];
+
+            if ((i_iter * 2 < tree.length) && (tree[(i_iter + 1) * 2 - 1] != null)) {
+                q.add((i_iter + 1) * 2 - 1);
+            }
+            if ((i_iter * 2 < tree.length) && (tree[(i_iter + 1) * 2] != null)) {
+                q.add((i_iter + 1) * 2);
+            }
+        }
+
+        for (int i = 0; i < cnt; i++) {
+            for (int j = i; j < cnt; j++) {
+                if (nt[i].key > nt[j].key) {
+                    Node tn = new Node(nt[j].key, nt[j].data);
+                    nt[j] = new Node(nt[i].key, nt[i].data);
+                    nt[i] = new Node(tn.key, tn.data);
+                }
+            }
+        }
+
+        ords = ord_routine(0, ords);
+
+        for (int i = 0; i < cnt; i++) {
+            mty[ords[i]] = new Node(nt[i].key, nt[i].data);
+        }
+        for (int i = 0; i < cnt; i++) {
+            rsh.insert(mty[i].key, mty[i].data);
+        }
+        i_idx = 0;
+        return rsh;
+    }
+    private static int i_idx = 0;
+    private int[] ord_routine(int i_ord, int[] ords) {
+        if (i_idx >= cnt) {
+            return ords;
+        }
+
+        if ((i_ord + 1) * 2 - 1 < cnt) {
+            ords = ord_routine((i_ord + 1) * 2 - 1, ords);
+        }
+        ords[i_idx] = i_ord;
+        i_idx++;
+        if ((i_ord + 1) * 2 < cnt) {
+            ords = ord_routine((i_ord + 1) * 2, ords);
+        }
+        return ords;
     }
 
     @Override
     public String describe() {
-        return null;
+
+        StringBuilder desc = new StringBuilder();
+
+        for (int i_h = 0; i_h <= h; i_h++) {
+            desc.append(String.format("H[%d] : ", i_h));
+            int offset = (int) (Math.pow(2, i_h)) -1;
+            for (int i_cnt = 0; (i_cnt <= offset) && (tree[offset + i_cnt] != null); i_cnt++) {
+                desc.append(tree[(int) (offset + i_cnt)].key);
+                if (i_cnt != offset) {
+                    desc.append(", ");
+                }
+            }
+            desc.append('\n');
+        }
+
+        return desc.toString();
     }
 }
 
@@ -861,54 +1012,21 @@ public class DS_ch08 {
 
         Random ran = new Random(273);
 
-        /*BST lb = new Link_BST();
-        BST lb2 = new Link_BST();
-
-        for (int i = 0; i < 10; i++) {
-            int x = ran.nextInt(100);
-            lb.insert(x, x*10);
-        }
-        for (int i = 0; i < 15; i++) {
-            int x = ran.nextInt(100);
-            lb2.insert(x, x);
-        }*/
-
-        /*
-        System.out.println(lb.describe());
-        System.out.println(lb2.describe());
-        */
-
-        /*
-        lb.delete(92);
-        lb.delete(19);
-        */
-
-        /*
-        System.out.println(lb.seek(13));
-         */
-        /*
-        BST conc = lb.concat(lb2);
-        System.out.println(conc.describe());
-
-        BST[] spl = conc.split(38);
-        System.out.println(spl[0].describe());
-        System.out.println(spl[1].describe());*/
-
         BST lb = new List_BST(3);
+        BST lb2 = new List_BST(3);
 
         for (int i = 0; i < 12; i++) {
             int x = ran.nextInt(100);
+            int x2 = ran.nextInt(100);
             lb.insert(x, x);
+            lb2.insert(x2, x2);
         }
 
-        /* 테스트 대상
-            19 >>> 좌측이 있는데 하나만 있는 경우 O
-            35 >>> 좌측 서브트리를 끌어올려야 함 O
-            71 >>> 우측만 있는 경우 (즉 좌측이 null) (O)
-            96 >>> 단말 (O)
-         */
-        lb.delete(35);
+        BST conc = lb.concat(lb2);
+        BST[] spls = conc.split(38);
+
+        BST rsh = lb.reshape();
+
+        System.out.println(rsh.describe());
     }
-
-
 }
