@@ -556,6 +556,10 @@ class List_BST implements BST {
 
         return desc.toString();
     }
+
+    public void b_insert(int key, Object data) {
+
+    }
 }
 
 class Link_BST implements BST {
