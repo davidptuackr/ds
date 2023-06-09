@@ -52,9 +52,11 @@ BST 외 힙 추가사항: 우선순위 큐(힙을 쓰는 별도 클래스로 제
 
 추가 문제
 
-- 이진 탐색 트리가 균형되도록 삽입하는 balanced_insert 
+- 이진 탐색 트리가 균형되도록 삽입하는 balanced_insert
+- (060923) 진짜로 일반적인 균형 탐색 트리
  */
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -88,12 +90,15 @@ class List_BST implements BST {
     private int cnt;
     private Node root;
     private Node[] tree;
+    private int[] i_inords;
 
     public List_BST(int max_h) {
         this.tree = new Node[(int) Math.pow(2, max_h + 1) - 1];
         this.root = null;
         this.cnt = 0;
         this.h = max_h;
+        this.i_inords = ord_routine(0, new int[tree.length]);
+        Arrays.fill(i_inords, -1);
     }
 
     /*
@@ -557,8 +562,86 @@ class List_BST implements BST {
         return desc.toString();
     }
 
-    public void b_insert(int key, Object data) {
 
+
+
+    public void b_insert(int key, Object data_in) {
+
+        /*
+        순차 표현 BST에서의 균형잡힌 삽입: reshape 필요 없이 삽입 단계에서부터 균형 유지
+
+        과정 (현재 아이디어는 배열 내에 인덱스 순서대로 채우도록 유도한다. 진짜로 일반적인 균형 잡힌 트리를 만드는 것은 구상해야 함)
+            0-1. 같은 키가 있는지 검사해서 있다면 삽입 불가 알리고 종료
+            0-2. 빈 트리라면 그냥 삽입 후 종료
+            1. tree에서 not null+1인 원소 개수 크기의 트리를 중위 순회했을 때 방문 순서를 알아낸다
+                >>> 중위순회 순서를 클래스 멤버로 추가
+            2. 다음과 같이 지정한다
+                X: 삽입할 키
+                loc: 들어가야 할 위치
+                loc_left: 중위순회 했을 때 loc을 방문하기 직전의 위치
+                loc_right: 중위순회 했을 때 loc을 방문한 직후의 위치
+                L: tree[loc_left]의 키
+                R: tree[loc_right]의 키
+            3. X, L, R에 따라 다음과 같이 행동한다
+                CASE 1: L < X < R >>> 그대로 삽입하고 종료
+                CASE 2: X < L
+                    1. X보다 키가 큰 노드들을 찾아낸다
+                    2. 1에서 찾아낸 노드들을 중위 순회 방문 순서에서 한 칸씩 우측으로 이동시킨다
+                        ex.
+                            L은 tree[loc]으로 이동
+                            L을 방문하기 전 원소는 L이 있던 위치로 이동
+                            ...
+                    3. 밀어내고 생긴 빈 자리에 X를 채워넣고 종료한다
+                CASE 3: R < X
+                    1. R보다 크고 X보다 작은 노드들을 찾아낸다
+                    2. 1에서 찾아낸 노드들을 중위 순회 방문 순서에서 한 칸씩 좌측으로 이동시킨다
+                        ex.
+                            R은 tree[loc]으로 이동
+                            R 다음 방문하는 원소는 R이 있던 위치로 이동
+                            ...
+                    3. 밀어내고 생긴 빈 자리에 X를 채워넣고 종료한다
+            4. 트리 확장은 tree가 꽉 찼을 때에만 한다.
+                이 때 중위순회 방문순서 목록도 갱신한다
+
+            예상 시간복잡도
+                O(n): 마지막 한 칸만 남았는데 가장 작은 키보다 더 작은 키가 들어와 전부 움직여야 하는 경우
+                O(n): 중위 순회 시간
+         */
+
+        if (empty()) {
+            insert(key, data_in);
+            i_inords[0] = 0;
+            return;
+        }
+
+        int i_cmp = 0;
+
+        while ((i_cmp < tree.length) && (tree[i_cmp] != null)) {
+            if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
+                i_cmp = (i_cmp + 1) * 2 - 1;
+            }
+            else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
+                i_cmp = (i_cmp + 1) * 2;
+            }
+            else {                              // 이미 있는 키라면 종료
+                System.out.printf("UNABLE TO INSERT (%d, %s). KEY %d IS ALREADY EXISTS\n", key, data_in, key);
+                return;
+            }
+        }
+
+        cnt++;
+        i_inords = ord_routine(0, i_inords);
+
+        int i_loc, i_bef, i_aft;
+
+        for (int i = 0; i < i_inords.length; i++) {
+            if (tree[i_inords[i]] == null) {
+                i_loc = i_inords[i];
+                i_bef = i_inords[i-1];
+                i_aft = i_inords[i+1];
+                break;
+            }
+        }
     }
 }
 
