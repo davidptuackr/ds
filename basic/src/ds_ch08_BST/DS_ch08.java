@@ -630,18 +630,71 @@ class List_BST implements BST {
         }
 
         cnt++;
-        i_inords = ord_routine(0, i_inords);
+        if (i_inords.length != tree.length) {
+            i_inords = new int[tree.length];
+            Arrays.fill(i_inords, -1);
+        }
 
-        int i_loc, i_bef, i_aft;
+        i_inords = ord_routine(0, i_inords);
+        i_idx = 0;
+
+        int i_loc = 0, i_bef = -1, i_aft = -1, i_init = 0;
 
         for (int i = 0; i < i_inords.length; i++) {
             if (tree[i_inords[i]] == null) {
                 i_loc = i_inords[i];
-                i_bef = i_inords[i-1];
-                i_aft = i_inords[i+1];
+                i_bef = i-1 < 0 ? -1 : i_inords[i-1];
+                i_aft = (i+1 > i_inords.length || i_inords[i+1] == -1) ? -1 : i_inords[i+1];
+                i_init = i;
                 break;
             }
         }
+
+        if (i_bef != -1 && i_aft != -1) {
+            if ((tree[i_bef].key < key) && (key < tree[i_aft].key)) {
+                tree[i_loc] = new Node(key, data_in);
+            }
+            else if (key < tree[i_bef].key) {
+                for (int i = i_init ; key < tree[i_inords[i-1]].key; i--) {
+                    tree[i_inords[i]] = new Node(tree[i_inords[i-1]].key, tree[i_inords[i-1]].data);
+                    i_loc = i_inords[i-1];
+                }
+                tree[i_loc] = new Node(key, data_in);
+            }
+            else if (tree[i_aft].key < key) {
+                for (int i = i_init ; i_inords[i+1] != -1 && tree[i_inords[i+1]].key < key; i++) {
+                    tree[i_inords[i]] = new Node(tree[i_inords[i+1]].key, tree[i_inords[i+1]].data);
+                    i_loc = i_inords[i+1];
+                }
+                tree[i_loc] = new Node(key, data_in);
+            }
+        }
+        else if (i_bef == -1) { // 레벨 첫번째인 경우
+            if (key < tree[i_aft].key) {
+                tree[i_loc] = new Node(key, data_in);
+            }
+            else {
+                for (int i = i_init ; tree[i_inords[i+1]].key < key && i_inords[i+1] != -1; i++) {
+                    tree[i_inords[i]] = new Node(tree[i_inords[i+1]].key, tree[i_inords[i+1]].data);
+                    i_loc = i_inords[i+1];
+                }
+                tree[i_loc] = new Node(key, data_in);
+            }
+        }
+        else { // 레벨 마지막인 경우
+            if (tree[i_bef].key < key) {
+                tree[i_loc] = new Node(key, data_in);
+            }
+            else {
+                for (int i = i_init ; key < tree[i_inords[i-1]].key; i--) {
+                    tree[i_inords[i]] = new Node(tree[i_inords[i-1]].key, tree[i_inords[i-1]].data);
+                    i_loc = i_inords[i-1];
+                }
+                tree[i_loc] = new Node(key, data_in);
+            }
+        }
+
+
     }
 }
 
@@ -1099,21 +1152,15 @@ public class DS_ch08 {
 
         Random ran = new Random(273);
 
-        BST lb = new List_BST(3);
+        List_BST lb = new List_BST(3);
         BST lb2 = new List_BST(3);
 
         for (int i = 0; i < 12; i++) {
             int x = ran.nextInt(100);
-            int x2 = ran.nextInt(100);
-            lb.insert(x, x);
-            lb2.insert(x2, x2);
+            lb.b_insert(x, x);
         }
 
-        BST conc = lb.concat(lb2);
-        BST[] spls = conc.split(38);
+        System.out.println(lb.describe());
 
-        BST rsh = lb.reshape();
-
-        System.out.println(rsh.describe());
     }
 }
