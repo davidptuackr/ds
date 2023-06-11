@@ -563,7 +563,25 @@ class List_BST implements BST {
     }
 
 
+    private int seek_routine(int key) {
 
+        int i_cmp = 0;
+
+        while ((i_cmp < tree.length) && (tree[i_cmp] != null)) {
+            if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
+                i_cmp = (i_cmp + 1) * 2 - 1;
+            }
+            else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
+                i_cmp = (i_cmp + 1) * 2;
+            }
+            else {                              // 이미 있는 키라면 종료
+                System.out.printf("UNABLE TO INSERT. KEY %d IS ALREADY EXISTS\n", key);
+                i_cmp = -1;
+                break;
+            }
+        }
+        return i_cmp;
+    }
 
     public void b_insert(int key, Object data_in) {
 
@@ -614,19 +632,14 @@ class List_BST implements BST {
             return;
         }
 
-        int i_cmp = 0;
+        /*
+        리팩토링
+        1. 삽입 위치 탐색과정 함수화 (O)
+         */
 
-        while ((i_cmp < tree.length) && (tree[i_cmp] != null)) {
-            if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
-                i_cmp = (i_cmp + 1) * 2 - 1;
-            }
-            else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
-                i_cmp = (i_cmp + 1) * 2;
-            }
-            else {                              // 이미 있는 키라면 종료
-                System.out.printf("UNABLE TO INSERT (%d, %s). KEY %d IS ALREADY EXISTS\n", key, data_in, key);
-                return;
-            }
+        int i_cmp = seek_routine(key);
+        if (i_cmp == -1) {
+            return;
         }
 
         cnt++;
