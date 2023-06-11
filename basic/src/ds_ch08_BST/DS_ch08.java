@@ -159,19 +159,9 @@ class List_BST implements BST {
             return;
         }
 
-        int i_cmp = 0;
-
-        while ((i_cmp < tree.length) && (tree[i_cmp] != null)) {
-            if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
-                i_cmp = (i_cmp + 1) * 2 - 1;
-            }
-            else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
-                i_cmp = (i_cmp + 1) * 2;
-            }
-            else {                              // 이미 있는 키라면 종료
-                System.out.printf("UNABLE TO INSERT (%d, %s). KEY %d IS ALREADY EXISTS\n", key, data_in, key);
-                return;
-            }
+        int i_cmp = seek_routine(key);
+        if (i_cmp == -1) {
+            return;
         }
 
         // 공간이 없다면 지금은 확장 (아니면 reshape)
@@ -568,13 +558,13 @@ class List_BST implements BST {
         int i_cmp = 0;
 
         while ((i_cmp < tree.length) && (tree[i_cmp] != null)) {
-            if (tree[i_cmp].key > key) {        // 새 키가 현 위치의 키보다 작으면 현 위치의 왼쪽 자식과 비교
+            if (tree[i_cmp].key > key) {
                 i_cmp = (i_cmp + 1) * 2 - 1;
             }
-            else if (tree[i_cmp].key < key) {   // 새 키가 현 위치의 키보다 크면 현 위치의 오른쪽 자식과 비교
+            else if (tree[i_cmp].key < key) {
                 i_cmp = (i_cmp + 1) * 2;
             }
-            else {                              // 이미 있는 키라면 종료
+            else {
                 System.out.printf("UNABLE TO INSERT. KEY %d IS ALREADY EXISTS\n", key);
                 i_cmp = -1;
                 break;
@@ -586,7 +576,7 @@ class List_BST implements BST {
     public void b_insert(int key, Object data_in) {
 
         /*
-        순차 표현 BST에서의 균형잡힌 삽입: reshape 필요 없이 삽입 단계에서부터 균형 유지
+        순차 표현 BST의 균형잡힌 삽입: reshape 필요 없이 삽입 단계에서부터 균형 유지
 
         과정 (현재 아이디어는 배열 내에 인덱스 순서대로 채우도록 유도한다. 진짜로 일반적인 균형 잡힌 트리를 만드는 것은 구상해야 함)
             0-1. 같은 키가 있는지 검사해서 있다면 삽입 불가 알리고 종료
@@ -624,6 +614,48 @@ class List_BST implements BST {
             예상 시간복잡도
                 O(n): 마지막 한 칸만 남았는데 가장 작은 키보다 더 작은 키가 들어와 전부 움직여야 하는 경우
                 O(n): 중위 순회 시간
+
+
+
+            ADL void b_insert (키, 값) {
+
+                int[] i_inords: 중위 순회 시 방문 순서. 빈 칸은 -1로 채움
+                int
+                    i_loc: 삽입 위치
+                    i_bef: 삽입 위치 직전에 방문하는 위치
+                    i_aft: 삽입 위치 다음에 방문하는 위치
+                    i_init: i_inords에서 i_loc의 최초 인덱스
+
+                if (empty()) : 루트에 삽입하고 종료
+                if (key already exists) : 삽입 불가 알린 후 종료
+
+                cnt++ (어차피 증가시켜야 하고, i_inords 만들 때 cnt가 tree보다 1 커야하기 때문)
+                if (tree.length != i_inords.length) : 확장 후 -1로 채움
+                i_inords = ord_routine()
+
+                i_loc = 0, i_bef = -1, i_aft = -1, i_init = 0
+                for i in 0 ~ i_inords.length :
+                    if tree[inords[i]] == null :
+                        i_loc = inords[i]
+                        i_bef = i-1 < 0 ? -1 : inords[i-1]
+                        i_aft = (i+1 > inords.length) && (i_inords[i+1] == -1) ? -1 : inords[i+1]
+                        i_init = i
+                        break;
+
+                1. 레벨 첫번째가 아니고 삽입할 키가 직전 키보다 작다면
+                    - 최초 i_loc에서 시작한다
+                    - i_inords[i_init]부터 시작해 key가 들어갈 위치를 찾을 때까지
+                      tree[방문순서]의 원소를 한 방문 순서씩 뒤로 밀어낸다
+                    - 밀어낼 때마다 삽입할 위치 i_loc을 갱신한다
+
+                2. 레벨 마지막이 아니고 삽입할 키가 직전 키보다 크다면
+                    - 최초 i_loc에서 시작한다
+                    - i_inords[i_init]부터 시작해 key가 들어갈 위치를 찾을 때까지
+                      tree[방문순서]의 원소를 한 방문 순서씩 앞으로 밀어낸다
+                    - 밀어낼 때마다 삽입할 위치 i_loc을 갱신한다
+
+                tree[i_loc(최종 삽입 위치)] = new Node(key, data_in);
+            }
          */
 
         if (empty()) {
@@ -636,11 +668,7 @@ class List_BST implements BST {
         리팩토링
         1. 삽입 위치 탐색과정 함수화 (O)
          */
-
-        int i_cmp = seek_routine(key);
-        if (i_cmp == -1) {
-            return;
-        }
+        if (seek_routine(key) == -1) return;
 
         cnt++;
         if (i_inords.length != tree.length) {
