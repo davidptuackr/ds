@@ -655,36 +655,19 @@ class List_BST implements BST {
 
         1. 중복된 tree[i_loc] = new Node(key, data_in); 제거 (O)
         2. 미사용 분기 제거 (O)
+        3. 조건 통합: 같은 의미를 다르게 표현 + 똑같은 for 루프 통합 (O)
          */
 
-        if (i_bef != -1 && i_aft != -1) {
-            if (key < tree[i_bef].key) {
-                for (int i = i_init ; key < tree[i_inords[i-1]].key; i--) {
-                    tree[i_inords[i]] = new Node(tree[i_inords[i-1]].key, tree[i_inords[i-1]].data);
-                    i_loc = i_inords[i-1];
-                }
-            }
-            else if (tree[i_aft].key < key) {
-                for (int i = i_init ; i_inords[i+1] != -1 && tree[i_inords[i+1]].key < key; i++) {
-                    tree[i_inords[i]] = new Node(tree[i_inords[i+1]].key, tree[i_inords[i+1]].data);
-                    i_loc = i_inords[i+1];
-                }
+        if ((i_bef != -1) && (key < tree[i_bef].key)) {
+            for (int i = i_init ; (key < tree[i_inords[i-1]].key); i--) {
+                tree[i_inords[i]] = new Node(tree[i_inords[i-1]].key, tree[i_inords[i-1]].data);
+                i_loc = i_inords[i-1];
             }
         }
-        else if (i_bef == -1) { // 레벨 첫번째인 경우
-            if (tree[i_aft].key < key) {
-                for (int i = i_init ; tree[i_inords[i+1]].key < key && i_inords[i+1] != -1; i++) {
-                    tree[i_inords[i]] = new Node(tree[i_inords[i+1]].key, tree[i_inords[i+1]].data);
-                    i_loc = i_inords[i+1];
-                }
-            }
-        }
-        else { // 레벨 마지막인 경우
-            if (key < tree[i_bef].key) {
-                for (int i = i_init ; key < tree[i_inords[i-1]].key; i--) {
-                    tree[i_inords[i]] = new Node(tree[i_inords[i-1]].key, tree[i_inords[i-1]].data);
-                    i_loc = i_inords[i-1];
-                }
+        else if ((i_aft != -1) && (tree[i_aft].key < key)) {
+            for (int i = i_init ; i_inords[i+1] != -1 && tree[i_inords[i+1]].key < key; i++) {
+                tree[i_inords[i]] = new Node(tree[i_inords[i+1]].key, tree[i_inords[i+1]].data);
+                i_loc = i_inords[i+1];
             }
         }
         tree[i_loc] = new Node(key, data_in);
