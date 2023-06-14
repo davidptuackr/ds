@@ -72,6 +72,17 @@ interface BST {
     String describe();
 }
 
+interface Heap {
+    boolean empty();
+    void insert (int key, Object data_in);
+    void delete (int key);
+    Object seek (int key);
+    Heap concat (BST other);
+    Heap[] split (int key);
+    Heap reshape ();
+    String describe();
+}
+
 class List_BST implements BST {
 
     private class Node {
@@ -377,8 +388,33 @@ class List_BST implements BST {
         메소드를 호출한 트리와 다른 트리를 합친 트리를 반환하는 메소드
         
         과정
-            1. this를 conc에 복사한다
-            2. conc에 other를 하나씩 삽입한다
+            1. conc에 this.tree를 레벨 순으로 삽입
+            2. conc에 other.tree를 레벨 순으로 삽입
+
+        ADL BST concat (BST other) {
+            BST conc        // this와 other를 합친 트리
+            Queue q         // tree 인덱스를 레벨 순으로 담아놓는 큐. poll한 값은 다음에 삽입할 tree 노드 인덱스다
+            int i_iter = 0  // q에 삽입할 값
+
+            q.add(i_iter) // 루트 삽입
+
+            while q is not empty :
+                i_iter = q.poll()
+                conc.insert(tree[i_iter] key, data)
+                if tree[i_iter] has left, right child :
+                    q.add(idx of i_iter left, right)
+
+            i_iter = 0 // 이번엔 other를 순회하면서 conc에 other내용 삽입
+            q.add(i_iter)
+
+            while q is not empty :
+                i_iter = q.poll()
+                conc.insert(other[i_iter] key, data)
+                if other[i_iter] has left, right child :
+                    q.add(idx of i_iter left, right)
+
+            return conc
+        }
          */
         
         BST conc = new List_BST(this.h);
@@ -420,6 +456,42 @@ class List_BST implements BST {
 
     @Override
     public BST[] split(int key) {
+
+        /*
+        순차 표현으로 구현한 BST를 특정 키를 기준으로 양분하는 메소드
+
+        과정
+            1. key가 있는지 확인한다. 없거나 빈 트리면 여기서 종료한다
+            2. 있다면 다음과 같이 작업한다
+                2-1. 큐 q에서 노드를 하나 얻는다
+                2-2. 얻어낸 노드 키가 key보다 작다면 BST lower, 아니면 BST higher에 넣는다
+                2-3. 노드가 자식이 있다면 q에 삽입한다
+                2-4. 상기 작업을 q가 빌 때까지 한다
+            3. return List_BST[] [lower, higher]
+
+        ADL BST[] split(int key) {
+
+            if tree is empty OR key not in tree :
+                return
+
+            List_BST lower, higher
+            Queue q
+            int i_iter = 0
+
+            q.add(i_iter)
+
+            while q is not empty :
+                i_iter = q.poll()
+
+                if tree[i_iter].key < key : lower.add(tree[i_ter] key, data)
+                else : higher.add(tree[i_ter] key, data)
+
+                if tree[i_iter] has left, right child :
+                    q.add(idx of left, right);
+
+            return { lower, higher }
+        }
+         */
 
         if (empty()) {
             System.out.println("UNABLE TO SPLIT. TREE IS EMPTY");
@@ -551,7 +623,6 @@ class List_BST implements BST {
 
         return desc.toString();
     }
-
 
     private int seek_routine(int key) {
 
@@ -1164,21 +1235,121 @@ class Link_BST implements BST {
     }
 }
 
+class List_Heap implements Heap {
+
+
+
+    @Override
+    public boolean empty() {
+        return false;
+    }
+
+    @Override
+    public void insert(int key, Object data_in) {
+
+    }
+
+    @Override
+    public void delete(int key) {
+
+    }
+
+    @Override
+    public Object seek(int key) {
+        return null;
+    }
+
+    @Override
+    public Heap concat(BST other) {
+        return null;
+    }
+
+    @Override
+    public Heap[] split(int key) {
+        return new Heap[0];
+    }
+
+    @Override
+    public Heap reshape() {
+        return null;
+    }
+
+    @Override
+    public String describe() {
+        return null;
+    }
+}
+
+class Link_Heap implements Heap {
+
+    private class Node {
+        int key;
+        Object data;
+        Node left;
+        Node right;
+
+        private Node(int key, Object data) {
+            this.key = key;
+            this.data = data;
+            this.left = null;
+            this.right = null;
+        }
+
+        private Node(int key, Object data, Node left, Node right) {
+            this.key = key;
+            this.data = data;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    Node root;
+    Queue<Node> wrk_q;
+
+    @Override
+    public boolean empty() {
+        return root == null;
+    }
+
+    @Override
+    public void insert(int key, Object data_in) {
+
+    }
+
+    @Override
+    public void delete(int key) {
+
+    }
+
+    @Override
+    public Object seek(int key) {
+        return null;
+    }
+
+    @Override
+    public Heap concat(BST other) {
+        return null;
+    }
+
+    @Override
+    public Heap[] split(int key) {
+        return new Heap[0];
+    }
+
+    @Override
+    public Heap reshape() {
+        return null;
+    }
+
+    @Override
+    public String describe() {
+        return null;
+    }
+}
+
 public class DS_ch08 {
 
     public static void main(String[] args) {
-
-        Random ran = new Random(273);
-
-        List_BST lb = new List_BST(3);
-        BST lb2 = new List_BST(3);
-
-        for (int i = 0; i < 12; i++) {
-            int x = ran.nextInt(100);
-            lb.b_insert(x, x);
-        }
-
-        System.out.println(lb.describe());
 
     }
 }
