@@ -73,6 +73,9 @@ interface BST {
 }
 
 interface Heap {
+
+    // 힙 동작은 최대 힙을 상정하고 구현할 것
+
     boolean empty();
     void insert (int key, Object data_in);
     void delete (int key);
@@ -1287,24 +1290,108 @@ class Link_Heap implements Heap {
         Object data;
         Node left;
         Node right;
+        Node parent;
 
         private Node(int key, Object data) {
             this.key = key;
             this.data = data;
             this.left = null;
             this.right = null;
+            this.parent = null;
+        }
+
+        private Node(int key, Object data, Node parent) {
+            this(key, data);
+            this.parent = parent;
         }
 
         private Node(int key, Object data, Node left, Node right) {
-            this.key = key;
-            this.data = data;
+            this(key, data);
             this.left = left;
             this.right = right;
+            this.parent = null;
+        }
+
+        private Node(int key, Object data, Node left, Node right, Node parent) {
+            this(key, data, left, right);
+            this.parent = parent;
+        }
+    }
+
+    private class Filler {
+
+        private class F_Node {
+            Node data;
+            F_Node next;
+
+            private F_Node(Node n) {
+                this.data = n;
+                this.next = null;
+            }
+        }
+
+        F_Node head;
+        F_Node tail;
+
+        private void add_t(Node to_add) {
+            F_Node fn = new F_Node(to_add);
+            if (head == null && tail == null) {
+                head = fn;
+                tail = fn;
+                return;
+            }
+            tail.next = fn;
+            tail = fn;
+        }
+
+        private void add_h(Node to_add) {
+            F_Node fn = new F_Node(to_add);
+            if (head == null && tail == null) {
+                head = fn;
+                tail = fn;
+                return;
+            }
+            fn.next = head;
+            head = fn;
+        }
+
+        private void rm_h() {
+            if (head.next == null) {
+                head = null;
+                tail = null;
+                return;
+            }
+            head = head.next;
+        }
+
+        private void rm_t() {
+            F_Node p = head;
+            if (head.next == null) {
+                head = null;
+                tail = null;
+                return;
+            }
+            while (p.next.next != null) {
+                p = p.next;
+            }
+            p.next = null;
+            tail = p;
+        }
+
+        private Node peek() {
+            return (head != null) ? head.data : null;
         }
     }
 
     Node root;
-    Queue<Node> wrk_q;
+    Filler filler;
+    Node to_fill;
+
+    public Link_Heap() {
+        root = null;
+        filler = new Filler();
+        to_fill = null;
+    }
 
     @Override
     public boolean empty() {
@@ -1313,7 +1400,71 @@ class Link_Heap implements Heap {
 
     @Override
     public void insert(int key, Object data_in) {
+        /*
+        연결 형태 힙에서의 삽입 연산
 
+        과정
+            1. 빈 힙이면 루트 채우고 종료
+            2. 아니면 다음과 같이 동작
+                2.1 완전 이진 트리 형태를 유지하는 위치에 삽입
+                2.2 삽입 위치의 부모와 비교
+                2.3 부모보다 크다면 부모와 자리바꿈, 아니면 그대로 종료 (정의가 재귀적이므로 더 비교할 필요 없음)
+                2.4 자신보다 큰 부모를 만날 때까지 2.3 반복
+         */
+        if (empty()) {
+            root = new Node(key, data_in);
+            filler.add_t(root);
+            return;
+        }
+
+        to_fill = filler.peek();
+        Node n_c = null, n_p = to_fill;
+
+        if (to_fill.left == null) {
+            to_fill.left = new Node(key, data_in, to_fill);
+            filler.add_t(to_fill.left);
+            n_c = to_fill.left;
+        }
+        else if (to_fill.right == null) {
+            to_fill.right = new Node(key, data_in, to_fill);
+            filler.add_t(to_fill.right);
+            n_c = to_fill.right;
+            filler.rm_h();
+        }
+
+        while ((n_p != null) && (n_c.key > n_p.key)) {
+
+            Node n_t = new Node(n_c.key, n_c.data, n_c.left, n_c.right, n_c.parent);
+
+            if (n_p.parent.left.key == n_p.key) {
+                n_p.parent.left = n_c;
+            }
+            else {
+                n_p.parent.right = n_c;
+            }
+
+            n_c.parent = n_p.parent;
+
+            if (n_p.left.key == n_c.key) {
+                n_c.left = n_p;
+                n_c.right = n_p.right;
+            }
+            else {
+                n_c.right = n_p;
+                n_c.left = n_p.left;
+            }
+
+            n_p.parent = n_c;
+            n_p.left = n_t.left;
+            n_p.right = n_t.right;
+
+            if (n_c.right == null) {
+                filler.rm_h();
+                filler.add_h(n_c);
+                filler.rm_t();
+                filler.add_t(n_p);
+            }
+        }
     }
 
     @Override
