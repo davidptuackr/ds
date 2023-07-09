@@ -1436,33 +1436,56 @@ class Link_Heap implements Heap {
 
             Node n_t = new Node(n_c.key, n_c.data, n_c.left, n_c.right, n_c.parent);
 
-            if (n_p.parent.left.key == n_p.key) {
-                n_p.parent.left = n_c;
+            if (n_p.parent != null) {
+                if (n_p.parent.left.key == n_p.key) {
+                    n_p.parent.left = n_c;
+                } else if (n_p.parent.right.key == n_p.key) {
+                    n_p.parent.right = n_c;
+                }
             }
-            else {
-                n_p.parent.right = n_c;
-            }
-
             n_c.parent = n_p.parent;
 
             if (n_p.left.key == n_c.key) {
                 n_c.left = n_p;
-                n_c.right = n_p.right;
+                    n_c.right = n_p.right;
+                if (n_p.right != null) {
+                    n_p.right.parent = n_c;
+                }
             }
-            else {
+            else if (n_p.right.key == n_c.key) {
                 n_c.right = n_p;
                 n_c.left = n_p.left;
+                n_p.left.parent = n_c;
+            }
+            n_p.parent = n_c;
+
+            n_p.left = n_t.left;
+            if (n_t.left != null) {
+                n_t.left.parent = n_p;
+            }
+            n_p.right = n_t.right;
+            if (n_t.right != null) {
+                n_t.right.parent = n_p;
             }
 
-            n_p.parent = n_c;
-            n_p.left = n_t.left;
-            n_p.right = n_t.right;
-
             if (n_c.right == null) {
+                filler.rm_h(); // 기존 n_p
+                filler.add_h(n_c); // n_c가 기존 n_p 자리에 왔으므로 순위 변경
+                filler.rm_t(); // 기존 n_c
+                filler.add_t(n_p); // n_p가 기존 n_c 자리에 왔으므로 순위 변경
+            }
+            assert filler.peek() != null;
+            if (n_c.key == filler.peek().key && n_c.left != null && n_c.right != null) {
                 filler.rm_h();
-                filler.add_h(n_c);
+            }
+            if (n_c.left != null && n_c.right != null && n_p.right == null) {
                 filler.rm_t();
                 filler.add_t(n_p);
+            }
+            n_p = n_c.parent;
+
+            if (n_c.parent == null) {
+                root = n_c;
             }
         }
     }
@@ -1502,5 +1525,12 @@ public class DS_ch08 {
 
     public static void main(String[] args) {
 
+        Link_Heap h1 = new Link_Heap();
+        Random rnd = new Random(100);
+
+        for (int i = 0; i < 10; i++) {
+            int k = rnd.nextInt(100);
+            h1.insert(k, k);
+        }
     }
 }
