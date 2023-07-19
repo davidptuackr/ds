@@ -78,12 +78,11 @@ interface Heap {
 
     boolean empty();
     void insert (int key, Object data_in);
-    void delete (int key);
-    Object seek (int key);
-    Heap concat (BST other);
+    void delete();
+    Heap concat (Heap other);
     Heap[] split (int key);
-    Heap reshape ();
     String describe();
+
 }
 
 class List_BST implements BST {
@@ -100,10 +99,10 @@ class List_BST implements BST {
 
     }
 
-    private int h;
-    private int cnt;
-    private Node root;
-    private Node[] tree;
+    int h;
+    int cnt;
+    Node root;
+    Node[] tree;
     private int[] i_inords;
 
     public List_BST(int max_h) {
@@ -119,8 +118,8 @@ class List_BST implements BST {
     배열 내 이동 방법
         부모 >>> 좌측 자식: (i+1)*2-1
         부모 >>> 좌측 자식: (i+1)*2
-        좌측 자식 >>> 부모: (i-1)/2
-        우측 자식 >>> 부모: (i)/2-1
+            ㄴ 자식 >>> 부모는 양쪽 다 (i-1)/2
+
      */
 
     @Override
@@ -232,10 +231,10 @@ class List_BST implements BST {
                 else : >>> 자식이 하나 이상 있을 때
                     int i_lmax = i_cmp의 좌측 자식부터 시작 (우측 최소도 가능)
                     i_lmax에서 오른쪽 자식이 없을 때까지 좌측 최대 갱신
-                    
+
                     if i_lmax가 null일 경우 : >>> i_cmp가 오른쪽 자식만 있을 경우
                         끌어올리기(rploc_strt: i_cmp, iter_strt: 우측 자식) >>> i_cmp의 우측 서브트리를 끌어올린다
-                    else if 좌측 최대에 좌측 서브트리가 있다면 : 
+                    else if 좌측 최대에 좌측 서브트리가 있다면 :
                         tree[i_cmp] = tree[i_lmax]
                         끌어올리기(rploc_strt: i_lmax, iter_strt: i_lmax 좌측 자식)
                     else : >>> 단말이라면
@@ -250,10 +249,10 @@ class List_BST implements BST {
                 큐 q_iter: 삽입할 서브트리 위치 큐
                 int i_rploc = rploc_strt: 끌어올릴 위치
                 int i_iter = iter_strt: 삽입할 서브트리 위치
-                
+
                 q_rploc에 i_rploc 삽입
                 q_iter에 i_iter 삽입
-                
+
                 while (
                         1. i_iter < 트리 최대 길이
                     AND 2. q_rploc에 원소가 있고
@@ -389,7 +388,7 @@ class List_BST implements BST {
 
         /*
         메소드를 호출한 트리와 다른 트리를 합친 트리를 반환하는 메소드
-        
+
         과정
             1. conc에 this.tree를 레벨 순으로 삽입
             2. conc에 other.tree를 레벨 순으로 삽입
@@ -419,13 +418,13 @@ class List_BST implements BST {
             return conc
         }
          */
-        
+
         BST conc = new List_BST(this.h);
         Queue<Integer> q = new LinkedList<>();
         int i_iter = 0;
 
         q.add(i_iter);
-        
+
         while (!q.isEmpty()) {
             i_iter = q.poll();
             conc.insert(tree[i_iter].key, tree[i_iter].data);
@@ -453,7 +452,7 @@ class List_BST implements BST {
                 q.add((i_iter + 1) * 2);
             }
         }
-        
+
         return conc;
     }
 
@@ -788,6 +787,31 @@ class List_BST implements BST {
         tree[i_loc] = new Node(key, data_in);
 
     }
+
+    public Heap to_heap() {
+
+        Queue<Integer> q = new LinkedList<>();
+        Heap h = new List_Heap(this.h);
+        int i_iter = 0;
+
+        q.add(i_iter);
+
+        while (!q.isEmpty()) {
+            i_iter = q.poll();
+            h.insert(tree[i_iter].key, tree[i_iter].data);
+
+            if (i_iter * 2 + 1 > tree.length) continue;
+
+            if (tree[i_iter * 2 + 1] != null) {
+                q.add(i_iter * 2 + 1);
+            }
+            if (tree[(i_iter + 1) * 2] != null) {
+                q.add((i_iter + 1) * 2);
+            }
+        }
+
+        return h;
+    }
 }
 
 class Link_BST implements BST {
@@ -960,7 +984,7 @@ class Link_BST implements BST {
         서로 다른 이진 탐색 트리의 이항 결합
         교재에선 한쪽 트리의 모든 키가 다른 트리의 모든 키보다 작다고 했지만
         여기서는 그렇지 않은 경우를 상정하고 작업한다.
-        
+
         아이디어
             1. 아예 양쪽 트리 노드를 큐에 전부 넣은 다음 하나씩 꺼내가면서 재구성
                 >>> 이 경우 양쪽의 원래 형체는 알아볼 수 없게 된다
@@ -1240,157 +1264,26 @@ class Link_BST implements BST {
 
 class List_Heap implements Heap {
 
-
-
-    @Override
-    public boolean empty() {
-        return false;
-    }
-
-    @Override
-    public void insert(int key, Object data_in) {
-
-    }
-
-    @Override
-    public void delete(int key) {
-
-    }
-
-    @Override
-    public Object seek(int key) {
-        return null;
-    }
-
-    @Override
-    public Heap concat(BST other) {
-        return null;
-    }
-
-    @Override
-    public Heap[] split(int key) {
-        return new Heap[0];
-    }
-
-    @Override
-    public Heap reshape() {
-        return null;
-    }
-
-    @Override
-    public String describe() {
-        return null;
-    }
-}
-
-class Link_Heap implements Heap {
-
     private class Node {
         int key;
         Object data;
-        Node left;
-        Node right;
-        Node parent;
 
         private Node(int key, Object data) {
             this.key = key;
             this.data = data;
-            this.left = null;
-            this.right = null;
-            this.parent = null;
-        }
-
-        private Node(int key, Object data, Node parent) {
-            this(key, data);
-            this.parent = parent;
-        }
-
-        private Node(int key, Object data, Node left, Node right) {
-            this(key, data);
-            this.left = left;
-            this.right = right;
-            this.parent = null;
-        }
-
-        private Node(int key, Object data, Node left, Node right, Node parent) {
-            this(key, data, left, right);
-            this.parent = parent;
         }
     }
 
-    private class Filler {
-
-        private class F_Node {
-            Node data;
-            F_Node next;
-
-            private F_Node(Node n) {
-                this.data = n;
-                this.next = null;
-            }
-        }
-
-        F_Node head;
-        F_Node tail;
-
-        private void add_t(Node to_add) {
-            F_Node fn = new F_Node(to_add);
-            if (head == null && tail == null) {
-                head = fn;
-                tail = fn;
-                return;
-            }
-            tail.next = fn;
-            tail = fn;
-        }
-
-        private void add_h(Node to_add) {
-            F_Node fn = new F_Node(to_add);
-            if (head == null && tail == null) {
-                head = fn;
-                tail = fn;
-                return;
-            }
-            fn.next = head;
-            head = fn;
-        }
-
-        private void rm_h() {
-            if (head.next == null) {
-                head = null;
-                tail = null;
-                return;
-            }
-            head = head.next;
-        }
-
-        private void rm_t() {
-            F_Node p = head;
-            if (head.next == null) {
-                head = null;
-                tail = null;
-                return;
-            }
-            while (p.next.next != null) {
-                p = p.next;
-            }
-            p.next = null;
-            tail = p;
-        }
-
-        private Node peek() {
-            return (head != null) ? head.data : null;
-        }
-    }
-
+    Node[] tree;
     Node root;
-    Filler filler;
-    Node to_fill;
+    private int h;
+    private int iloc;
 
-    public Link_Heap() {
-        root = null;
-        filler = new Filler();
-        to_fill = null;
+    public List_Heap(int h) {
+        this.h = h;
+        this.tree = new Node[(int) Math.pow(2, h + 1) - 1];
+        this.iloc = 0;
+        this.root = null;
     }
 
     @Override
@@ -1400,108 +1293,256 @@ class Link_Heap implements Heap {
 
     @Override
     public void insert(int key, Object data_in) {
-        /*
-        연결 형태 힙에서의 삽입 연산
-
-        과정
-            1. 빈 힙이면 루트 채우고 종료
-            2. 아니면 다음과 같이 동작
-                2.1 완전 이진 트리 형태를 유지하는 위치에 삽입
-                2.2 삽입 위치의 부모와 비교
-                2.3 부모보다 크다면 부모와 자리바꿈, 아니면 그대로 종료 (정의가 재귀적이므로 더 비교할 필요 없음)
-                2.4 자신보다 큰 부모를 만날 때까지 2.3 반복
-         */
         if (empty()) {
-            root = new Node(key, data_in);
-            filler.add_t(root);
+            tree[0] = new Node(key, data_in);
+            root = tree[0];
+            iloc++;
             return;
         }
 
-        to_fill = filler.peek();
-        Node n_c = null, n_p = to_fill;
-
-        if (to_fill.left == null) {
-            to_fill.left = new Node(key, data_in, to_fill);
-            filler.add_t(to_fill.left);
-            n_c = to_fill.left;
-        }
-        else if (to_fill.right == null) {
-            to_fill.right = new Node(key, data_in, to_fill);
-            filler.add_t(to_fill.right);
-            n_c = to_fill.right;
-            filler.rm_h();
-        }
-
-        while ((n_p != null) && (n_c.key > n_p.key)) {
-
-            Node n_t = new Node(n_c.key, n_c.data, n_c.left, n_c.right, n_c.parent);
-
-            if (n_p.parent != null) {
-                if (n_p.parent.left.key == n_p.key) {
-                    n_p.parent.left = n_c;
-                } else if (n_p.parent.right.key == n_p.key) {
-                    n_p.parent.right = n_c;
+        tree[iloc] = new Node(key, data_in);
+        int i_iter = iloc;
+        while (i_iter != 0) {
+            if (tree[i_iter].key > tree[(i_iter - 1) / 2].key) {
+                swap(i_iter, (i_iter - 1) / 2);
+                i_iter = (i_iter - 1) / 2;
+            }
+            else if (tree[i_iter].key == tree[(i_iter - 1) / 2].key) {
+                int i_reloc = iloc;
+                while (i_reloc != i_iter) {
+                    swap(i_reloc, (i_reloc - 1) / 2);
+                    i_reloc = (i_reloc - 1) / 2;
                 }
+                tree[iloc] = null;
+                return;
             }
-            n_c.parent = n_p.parent;
+            else {
+                break;
+            }
+        }
+        iloc++;
+    }
 
-            if (n_p.left.key == n_c.key) {
-                n_c.left = n_p;
-                    n_c.right = n_p.right;
-                if (n_p.right != null) {
-                    n_p.right.parent = n_c;
-                }
-            }
-            else if (n_p.right.key == n_c.key) {
-                n_c.right = n_p;
-                n_c.left = n_p.left;
-                n_p.left.parent = n_c;
-            }
-            n_p.parent = n_c;
+    private void swap(int iloc_c, int iloc_p) {
+        Node t = new Node(tree[iloc_c].key, tree[iloc_c].data);
+        tree[iloc_c].key = tree[iloc_p].key;
+        tree[iloc_c].data = tree[iloc_p].data;
+        tree[iloc_p].key = t.key;
+        tree[iloc_p].data = t.data;
+    }
 
-            n_p.left = n_t.left;
-            if (n_t.left != null) {
-                n_t.left.parent = n_p;
-            }
-            n_p.right = n_t.right;
-            if (n_t.right != null) {
-                n_t.right.parent = n_p;
-            }
+    @Override
+    public void delete() {
+        swap(iloc-1, 0);
+        tree[iloc-1] = null;
+        del_routine(1, 0);
+        iloc--;
+    }
+    private void del_routine(int iloc_c, int iloc_p) {
+        if (tree[iloc_c] == null || iloc_c * 2 > tree.length) {
+            return;
+        }
 
-            if (n_c.right == null) {
-                filler.rm_h(); // 기존 n_p
-                filler.add_h(n_c); // n_c가 기존 n_p 자리에 왔으므로 순위 변경
-                filler.rm_t(); // 기존 n_c
-                filler.add_t(n_p); // n_p가 기존 n_c 자리에 왔으므로 순위 변경
-            }
-            assert filler.peek() != null;
-            if (n_c.key == filler.peek().key && n_c.left != null && n_c.right != null) {
-                filler.rm_h();
-            }
-            if (n_c.left != null && n_c.right != null && n_p.right == null) {
-                filler.rm_t();
-                filler.add_t(n_p);
-            }
-            n_p = n_c.parent;
-
-            if (n_c.parent == null) {
-                root = n_c;
-            }
+        if (tree[iloc_c].key > tree[iloc_c + 1].key) {
+            swap(iloc_c, iloc_p);
+            del_routine((iloc_c * 2) + 1, iloc_c);
+        }
+        else {
+            swap(iloc_c + 1, iloc_p);
+            del_routine((iloc_c + 1) * 2 + 1, iloc_c + 1);
         }
     }
 
     @Override
-    public void delete(int key) {
+    public Heap concat(Heap other) {
+
+        int h_conc = (int) Math.ceil(
+                    Math.log(this.get_cnt()) +
+                    Math.log(((List_Heap) other).get_cnt())
+        );
+
+        Heap conc = new List_Heap(h_conc);
+
+        for (int i = 0; i < this.get_cnt(); i++) {
+            conc.insert(this.tree[i].key, this.tree[i].data);
+        }
+
+        for (int i = 0; i < ((List_Heap) other).get_cnt(); i++) {
+            conc.insert(((List_Heap) other).tree[i].key, ((List_Heap) other).tree[i].data);
+        }
+
+        return conc;
+    }
+
+    public int get_cnt() {
+        return this.iloc;
+    }
+
+    @Override
+    public Heap[] split(int key) {
+
+        Heap high = new List_Heap(this.h);
+        Heap low = new List_Heap(this.h);
+
+        for (int i = 0; i < iloc; i++) {
+            if (tree[i].key > key) {
+                high.insert(tree[i].key, tree[i].data);
+            }
+            else {
+                low.insert(tree[i].key, tree[i].data);
+            }
+        }
+
+        return new Heap[] {high, low};
+    }
+
+    @Override
+    public String describe() {
+
+        StringBuilder sb = new StringBuilder();
+
+        int lvl = 1;
+
+        for (int i = 0; i < iloc; i++) {
+            if (i == (int) Math.pow(2, lvl - 1) - 1) {
+                sb.append(String.format("LEVEL %d: ", lvl));
+                lvl++;
+            }
+            sb.append(String.format("(%d, %s)", tree[i].key, tree[i].data));
+            if (i != (int) Math.pow(2, lvl - 1) - 2) {
+                sb.append(", ");
+            }
+            else {
+                sb.append('\n');
+            }
+        }
+
+        return sb.toString();
+    }
+
+}
+
+class Link_Heap implements Heap {
+
+    private class Node {
+        Node parent, left, right;
+        int key;
+        Object data;
+
+        Node(int key, Object data) {
+            this.key = key;
+            this.data = data;
+        }
+    }
+
+    private class Filler {
+        F_Node head;
+        F_Node tail;
+
+        Filler() {
+            this.head = null;
+            this.tail = null;
+        }
+
+        void add_head(Node n) {
+            if (head == null) {
+                head = new F_Node(null, n, null);
+                tail = head;
+            }
+            else {
+                head.bef = new F_Node(null, n, head);
+                head = head.bef;
+            }
+        }
+
+        void rm_head() {
+            head = head.next;
+            if (head == null) {
+                tail = null;
+            }
+            else {
+                head.bef = null;
+            }
+        }
+
+        Node get_head() {
+            return head.node;
+        }
+
+        void add_tail(Node n) {
+            if (tail == null) {
+                tail = new F_Node(null, n, null);
+                head = tail;
+            }
+            else {
+                tail.next = new F_Node(tail, n, null);
+                tail = tail.next;
+            }
+        }
+
+        void rm_tail() {
+            tail = tail.bef;
+            if (tail == null) {
+                head = null;
+            }
+            else {
+                tail.next = null;
+            }
+        }
+
+        Node get_tail() {
+            return tail.node;
+        }
+
+    }
+    private class F_Node {
+        F_Node bef;
+        Node node;
+        F_Node next;
+
+        F_Node(F_Node bef, Node node, F_Node next) {
+            this.bef = bef;
+            this.node = node;
+            this.next = next;
+        }
+    }
+
+    Node root;
+    int cnt;
+    Filler q;
+
+    public Link_Heap() {
+        this.root = null;
+        this.cnt = 0;
+        this.q = new Filler();
+    }
+
+    @Override
+    public boolean empty() {
+        return root == null;
+    }
+
+    @Override
+    public void insert(int key, Object data_in) {
+        if (empty()) {
+            root = new Node(key, data_in);
+            q.add_head(root);
+            return;
+        }
+
+        // 여기서부터 시작: (071923 1615)
+    }
+
+    @Override
+    public void delete() {
 
     }
 
     @Override
-    public Object seek(int key) {
-        return null;
-    }
+    public Heap concat(Heap other) {
 
-    @Override
-    public Heap concat(BST other) {
+
+
         return null;
     }
 
@@ -1511,12 +1552,11 @@ class Link_Heap implements Heap {
     }
 
     @Override
-    public Heap reshape() {
+    public String describe() {
         return null;
     }
 
-    @Override
-    public String describe() {
+    public static Heap bst_to_heap(BST bst) {
         return null;
     }
 }
@@ -1525,12 +1565,25 @@ public class DS_ch08 {
 
     public static void main(String[] args) {
 
-        Link_Heap h1 = new Link_Heap();
+        List_Heap h1 = new List_Heap(4);
+        List_Heap h2 = new List_Heap(3);
+        List_BST lb1 = new List_BST(4);
         Random rnd = new Random(100);
 
         for (int i = 0; i < 10; i++) {
             int k = rnd.nextInt(100);
             h1.insert(k, k);
         }
+        for (int i = 0; i < 8; i++) {
+            int k = rnd.nextInt(100);
+            h2.insert(k, k);
+        }
+        for (int i = 0; i < 10; i++) {
+            int k = rnd.nextInt(100);
+            lb1.insert(k, k);
+        }
+
+        List_Heap h_lb1 = (List_Heap) lb1.to_heap();
+        System.out.println(h_lb1.describe());
     }
 }
