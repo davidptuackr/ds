@@ -1529,8 +1529,54 @@ class Link_Heap implements Heap {
             q.add_head(root);
             return;
         }
-
         // 여기서부터 시작: (071923 1615)
+
+        Node p = q.get_head();
+        Node c = new Node(key, data_in);
+
+        c.parent = p;
+        if (p.left == null) {
+            p.left = c;
+        }
+        else {
+            p.right = c;
+            q.rm_head();
+        }
+        q.add_tail(c);
+
+        while ((p != null) && (p.key < c.key)) {
+            swap(p, c);
+            c = p;
+            p = p.parent;
+        }
+
+        if ((p != null) && (p.key == c.key)) {
+            c.key -= 1;
+        }
+    }
+
+    /*
+    swap (p, c) :
+        init
+            c: (key, data, c.left, c.right, c.parent=p)
+            p: (key, data, (p.left, p.right)=c, p.parent)
+
+        c.parent = p.parent >>> c: (key, data, c.left, c.right, p.parent)
+        p.parent = c >>> p: (..., (p.left, p.right)=c, c)
+        c.left, c.right = p.left, p >>> c: (..., p.left, p, p.parent)
+        p.left, p.right = c.left, c.right >>> p: (..., c.left, c.right, c)
+        p.children.parent = change into p
+        c.parent.left OR right = change into c
+     */
+    private void swap(Node p, Node c) {
+
+        int tk = p.key;
+        Object td = p.data;
+
+        p.key = c.key;
+        p.data = c.data;
+        c.key = tk;
+        c.data = td;
     }
 
     @Override
@@ -1552,28 +1598,51 @@ class Link_Heap implements Heap {
     }
 
     @Override
-    public String describe() {
-        return null;
+    public String describe() { // 여기부터 시작 (072023 1250)
+
+        Queue<Node> q_desc = new LinkedList<>();
+        StringBuilder sb = new StringBuilder();
+        int i_iter = 0;
+        int pow = 0;
+
+        q_desc.add(root);
+
+        while (!q_desc.isEmpty()) {
+            Node n = q_desc.poll();
+            if (i_iter == (int) Math.pow(2, pow) - 1) {
+                sb.append(String.format("LEVEL %d: ", pow));
+                pow++;
+            }
+            sb.append(String.format("(%d, %s)", n.key, n.data));
+            if (i_iter != (int) Math.pow(2, pow)) {
+                sb.append(", ");
+            }
+            else {
+                sb.append("\n");
+            }
+            i_iter++;
+        }
+
+        return sb.toString();
     }
 
-    public static Heap bst_to_heap(BST bst) {
-        return null;
-    }
 }
 
 public class DS_ch08 {
 
     public static void main(String[] args) {
 
-        List_Heap h1 = new List_Heap(4);
-        List_Heap h2 = new List_Heap(3);
-        List_BST lb1 = new List_BST(4);
+        Link_Heap h1 = new Link_Heap();
+        Link_Heap h2 = new Link_Heap();
+        Link_BST lb1 = new Link_BST();
         Random rnd = new Random(100);
 
         for (int i = 0; i < 10; i++) {
             int k = rnd.nextInt(100);
             h1.insert(k, k);
         }
+        //System.out.println(h1.describe());
+        /*
         for (int i = 0; i < 8; i++) {
             int k = rnd.nextInt(100);
             h2.insert(k, k);
@@ -1583,7 +1652,6 @@ public class DS_ch08 {
             lb1.insert(k, k);
         }
 
-        List_Heap h_lb1 = (List_Heap) lb1.to_heap();
-        System.out.println(h_lb1.describe());
+         */
     }
 }
