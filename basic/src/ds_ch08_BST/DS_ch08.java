@@ -56,10 +56,7 @@ BST 외 힙 추가사항: 우선순위 큐(힙을 쓰는 별도 클래스로 제
 - (060923) 진짜로 일반적인 균형 탐색 트리
  */
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Random;
+import java.util.*;
 
 interface BST {
     boolean empty();
@@ -1581,20 +1578,119 @@ class Link_Heap implements Heap {
 
     @Override
     public void delete() {
+        Node n = q.get_tail();
+        swap(root, n);
 
+        if (n.parent.left.equals(n)) {
+            n.parent.left = null;
+        }
+        else {
+            n.parent.right = null;
+        }
+        q.rm_tail();
+
+        del_routine(root);
+    }
+
+    private void del_routine(Node p) {
+        if ((p.left == null && p.right == null)) {
+            return;
+        }
+        Node c;
+        if (p.left != null && p.right == null) {
+            c = p.left;
+        }
+        else if (p.left == null) {
+            c = p.right;
+        }
+        else {
+            c = (p.left.key > p.right.key) ? p.left : p.right;
+        }
+        if (p.key < c.key) {
+            swap(p, c);
+            del_routine(c);
+        }
+    }
+
+    private Map<Integer, Object> pop() {
+        Node n = q.get_tail();
+        Map<Integer, Object> popped = new HashMap<>();
+        popped.put(root.key, root.data);
+        swap(root, n);
+
+        if (n.parent.left.equals(n)) {
+            n.parent.left = null;
+        }
+        else {
+            n.parent.right = null;
+        }
+        q.rm_tail();
+
+        del_routine(root);
+
+        return popped;
     }
 
     @Override
     public Heap concat(Heap other) {
 
+        Heap conc = new Link_Heap();
+        Queue<Node> q = new LinkedList<>();
 
+        q.add(this.root);
 
-        return null;
+        while (!q.isEmpty()) {
+            Node n = q.poll();
+            conc.insert(n.key, n.data);
+
+            if (n.left != null) {
+                q.add(n.left);
+            }
+            if (n.right != null) {
+                q.add(n.right);
+            }
+        }
+
+        q.add(((Link_Heap) other).root);
+        while (!q.isEmpty()) {
+            Node n = q.poll();
+            conc.insert(n.key, n.data);
+
+            if (n.left != null) {
+                q.add(n.left);
+            }
+            if (n.right != null) {
+                q.add(n.right);
+            }
+        }
+
+        return conc;
     }
 
     @Override
     public Heap[] split(int key) {
-        return new Heap[0];
+
+        Heap high = new Link_Heap();
+        Heap low = new Link_Heap();
+        Heap dest;
+        Queue<Node> q = new LinkedList<>();
+
+        q.add(root);
+
+        while (!q.isEmpty()) {
+            Node n = q.poll();
+            dest = (n.key > key) ? high : low;
+            dest.insert(n.key, n.data);
+
+            if (n.left != null) {
+                q.add(n.left);
+            }
+            if (n.right != null) {
+                q.add(n.right);
+            }
+        }
+
+        return new Heap[]{high, low};
     }
 
     @Override
@@ -1603,24 +1699,31 @@ class Link_Heap implements Heap {
         Queue<Node> q_desc = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
         int i_iter = 0;
-        int pow = 0;
+        int h = 0;
 
         q_desc.add(root);
 
         while (!q_desc.isEmpty()) {
             Node n = q_desc.poll();
-            if (i_iter == (int) Math.pow(2, pow) - 1) {
-                sb.append(String.format("LEVEL %d: ", pow));
-                pow++;
+            if (i_iter == (int) Math.pow(2, h) - 1) {
+                sb.append(String.format("LEVEL %d: ", h));
+                h++;
             }
             sb.append(String.format("(%d, %s)", n.key, n.data));
-            if (i_iter != (int) Math.pow(2, pow)) {
+            i_iter++;
+            if ((i_iter != (int) Math.pow(2, h) - 1)) {
                 sb.append(", ");
             }
             else {
                 sb.append("\n");
             }
-            i_iter++;
+
+            if (n.left != null) {
+                q_desc.add(n.left);
+            }
+            if (n.right != null) {
+                q_desc.add(n.right);
+            }
         }
 
         return sb.toString();
@@ -1641,7 +1744,15 @@ public class DS_ch08 {
             int k = rnd.nextInt(100);
             h1.insert(k, k);
         }
-        //System.out.println(h1.describe());
+        for (int i = 0; i < 10; i++) {
+            int k = rnd.nextInt(100);
+            h2.insert(k, k);
+        }
+
+        Heap[] divs = h1.concat(h2).split(50);
+        System.out.println(divs[0].describe());
+        System.out.println(divs[1].describe());
+
         /*
         for (int i = 0; i < 8; i++) {
             int k = rnd.nextInt(100);
