@@ -1220,7 +1220,7 @@ class Link_BST implements BST {
             lv_first: 레벨 첫 원소의 키를 저장
          */
 
-        StringBuilder sb = new StringBuilder();
+        /*StringBuilder sb = new StringBuilder();
         Queue<Node> q = new LinkedList<>();
         q.add(this.root);
         boolean is_lv_first = true;
@@ -1255,7 +1255,123 @@ class Link_BST implements BST {
             }
         }
 
+        return sb.toString();*/
+
+        Queue<Node> q_desc = new LinkedList<>();
+        StringBuilder sb = new StringBuilder();
+        int i_iter = 0;
+        int h = 0;
+
+        q_desc.add(root);
+
+        while (!q_desc.isEmpty()) {
+            Node n = q_desc.poll();
+            if (i_iter == (int) Math.pow(2, h) - 1) {
+                sb.append(String.format("LEVEL %d: ", h));
+                h++;
+            }
+            sb.append(String.format("(%d, %s)", n.key, n.data));
+            i_iter++;
+            if ((i_iter != (int) Math.pow(2, h) - 1)) {
+                sb.append(", ");
+            }
+            else {
+                sb.append("\n");
+            }
+
+            if (n.left != null) {
+                q_desc.add(n.left);
+            }
+            if (n.right != null) {
+                q_desc.add(n.right);
+            }
+        }
+
         return sb.toString();
+    }
+
+    public Link_Heap to_heap() {
+        /*
+        BST를 힙으로 바꾸는 메소드
+        단, BST의 노드를 하나씩 힙에 삽입하는 방식은 안된다 >>> ~ List_BST.to_heap()
+
+        과정: 힙의 재귀적인 정의 활용 >>> 자식들도 힙이라는 점
+
+        단말 직계비속 + 직계비속의 좌/우측 단위로 힙으로 변경
+        그 다음엔 그 위의 노드까지 껴서 힙으로 변경
+        >>> 점점 규모를 늘려감
+         */
+        Link_BST cpy = (Link_BST) this.reshape();
+        System.out.println(cpy.describe());
+        Stack<Node> s = new Stack<>();
+        Queue<Node> q = new LinkedList<>();
+        s.push(cpy.root);
+        q.add(cpy.root);
+        Node p;
+
+        while (!q.isEmpty()) {
+            p = q.poll();
+            if (p.left != null) {
+                q.add(p.left);
+                s.push(p.left);
+            }
+            if (p.right != null) {
+                q.add(p.right);
+                s.push(p.right);
+            }
+        }
+
+        while (!s.isEmpty()) {
+            to_heap_routine(s.pop());
+        }
+
+        System.out.println(cpy.describe());
+
+        Link_Heap h = new Link_Heap();
+        q.add(cpy.root);
+
+        while (!q.isEmpty()) {
+            p = q.poll();
+            if (p.left != null) {
+                q.add(p.left);
+            }
+            if (p.right != null) {
+                q.add(p.right);
+            }
+
+            h.insert(p.key, p.data);
+        }
+
+        return h;
+    }
+
+    private void to_heap_routine(Node p) {
+
+        Node q;
+
+        if (p.left != null && p.right != null) {
+            q = (p.left.key > p.right.key) ? p.left : p.right;
+        }
+        else if (p.left != null) {
+            q = p.left;
+        }
+        else if (p.right != null) {
+            q = p.right;
+        }
+        else {
+            return;
+        }
+
+        if (p.key < q.key) {
+            int tk = p.key;
+            Object td = p.data;
+            p.key = q.key;
+            p.data = q.data;
+            q.key = tk;
+            q.data = td;
+        }
+
+        to_heap_routine(q);
     }
 }
 
@@ -1741,17 +1857,13 @@ public class DS_ch08 {
         Random rnd = new Random(100);
 
         for (int i = 0; i < 10; i++) {
-            int k = rnd.nextInt(100);
-            h1.insert(k, k);
+            int n = rnd.nextInt(100);
+            lb1.insert(n, n);
         }
-        for (int i = 0; i < 10; i++) {
-            int k = rnd.nextInt(100);
-            h2.insert(k, k);
-        }
+        Link_Heap h = lb1.to_heap();
+        System.out.println(h.describe());
 
-        Heap[] divs = h1.concat(h2).split(50);
-        System.out.println(divs[0].describe());
-        System.out.println(divs[1].describe());
+        // Link_BST 힙으로 바꾸는 것 해야됨!!! (072323 1246)
 
         /*
         for (int i = 0; i < 8; i++) {
