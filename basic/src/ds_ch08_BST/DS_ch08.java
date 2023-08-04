@@ -1213,49 +1213,6 @@ class Link_BST implements BST {
     }
 
     public String describe() {
-        /*
-        설정
-            q: 레벨 순서로 뽑아내기 위한 큐. 초기에 루트 삽입
-            is_lv_first: true일 경우 peek 한 노드가 해당 레벨의 첫 원소라는 의미. 레벨 정보 추가 목적.
-            lv_first: 레벨 첫 원소의 키를 저장
-         */
-
-        /*StringBuilder sb = new StringBuilder();
-        Queue<Node> q = new LinkedList<>();
-        q.add(this.root);
-        boolean is_lv_first = true;
-        int lv_first = this.root.key;
-        int lv = 1;
-        Node peeked;
-
-        while (!q.isEmpty()) {
-            if (lv_first == q.peek().key) {
-                sb.append(String.format("\nLEVEL %d: %s ", lv++, q.peek().data));
-                is_lv_first = false;
-            }
-            else {
-                sb.append(q.peek().data);
-                sb.append(" ");
-            }
-            peeked = q.poll();
-
-            if (peeked.left != null) {
-                q.add(peeked.left);
-                if (!is_lv_first) {
-                    is_lv_first = true;
-                    lv_first = peeked.left.key;
-                }
-            }
-            if (peeked.right != null) {
-                q.add(peeked.right);
-                if (!is_lv_first) {
-                    is_lv_first = true;
-                    lv_first = peeked.right.key;
-                }
-            }
-        }
-
-        return sb.toString();*/
 
         Queue<Node> q_desc = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
@@ -1293,22 +1250,61 @@ class Link_BST implements BST {
     public Link_Heap to_heap() {
         /*
         BST를 힙으로 바꾸는 메소드
-        단, BST의 노드를 하나씩 힙에 삽입하는 방식은 안된다 >>> ~ List_BST.to_heap()
+        (BST의 노드를 하나씩 힙에 넣는 방식이 아니다)
 
-        과정: 힙의 재귀적인 정의 활용 >>> 자식들도 힙이라는 점
+        과정
+            1. BST를 완전 이진 트리 형태로 재형성한다 >>> 힙의 정의 중 완전 이진 트리일 것을 만족하기 위함
+            2. 재형성된 BST의 각 노드를 스택에 삽입한다
+            3. 스택의 노드를 하나씩 꺼내면서 다음을 실시한다
+                3-1. 꺼낸 노드를 p라고 했을 때, p의 두 자식 중 더 큰 쪽을 q라고 한다. 한쪽만 있다면 해당 노드를 q라고 한다
+                3-2. p의 키가 q의 키보다 작다면 둘을 바꾼다
+                3-3. 단말 노드에 도달하거나 더 이상 바꿀 수 없을 때까지 3-1 + 3-2를 반복한다
+            4. 재배열 결과를 루트부터 하나씩 힙에 삽입한다
+                >>> 논리적으로 보면 3에서 이미 힙이 된 것이지만 아직 BST 이므로 이 작업을 한다
 
-        단말 직계비속 + 직계비속의 좌/우측 단위로 힙으로 변경
-        그 다음엔 그 위의 노드까지 껴서 힙으로 변경
-        >>> 점점 규모를 늘려감
+        ADL Heap to_heap()
+
+        cpy = this.reshape()
+        Stack s
+        Queue q
+        Node p
+
+        s.push(cpy.root)
+        q.add(cpy.root)
+
+        while q has next :
+            p = q.poll()
+            if p has children :
+                s.push(p.children)
+                q.add(p.children)
+
+        while s has next :
+            re_arrange(s.pop())
+
+        Heap h
+
+        q.add(cpy.root)
+
+        while q has next :
+            p = q.poll()
+            h.insert(p)
+            if p has children:
+                q.add(p.children)
+
+        return h
          */
+
+        // 1. BST를 완전 이진 트리 형태로 재형성한다
         Link_BST cpy = (Link_BST) this.reshape();
-        System.out.println(cpy.describe());
+
         Stack<Node> s = new Stack<>();
         Queue<Node> q = new LinkedList<>();
-        s.push(cpy.root);
-        q.add(cpy.root);
         Node p;
 
+        s.push(cpy.root);
+        q.add(cpy.root);
+
+        // 2. 재형성된 BST의 각 노드를 스택에 삽입한다
         while (!q.isEmpty()) {
             p = q.poll();
             if (p.left != null) {
@@ -1321,12 +1317,12 @@ class Link_BST implements BST {
             }
         }
 
+        // 3. 스택의 노드를 하나씩 꺼내면서 노드를 재배열한다
         while (!s.isEmpty()) {
             to_heap_routine(s.pop());
         }
 
-        System.out.println(cpy.describe());
-
+        // 4. 재배열 결과를 루트부터 하나씩 힙에 삽입한다
         Link_Heap h = new Link_Heap();
         q.add(cpy.root);
 
@@ -1349,19 +1345,21 @@ class Link_BST implements BST {
 
         Node q;
 
+        // 3-1. 꺼낸 노드를 p라고 했을 때, p의 두 자식 중 더 큰 쪽을 q라고 한다. 한쪽만 있다면 해당 노드를 q라고 한다
         if (p.left != null && p.right != null) {
-            q = (p.left.key > p.right.key) ? p.left : p.right;
+            q = (p.left.key > p.right.key) ? p.left : p.right; // 자식 중 더 큰 쪽을 q로 선택
         }
-        else if (p.left != null) {
+        else if (p.left != null) { // 한쪽만 있다면 해당 자식을 선택
             q = p.left;
         }
         else if (p.right != null) {
             q = p.right;
         }
-        else {
+        else { // 자식이 없다면 종료
             return;
         }
 
+        // 3-2. p의 키가 q의 키보다 작다면 둘을 바꾼다
         if (p.key < q.key) {
             int tk = p.key;
             Object td = p.data;
@@ -1371,6 +1369,7 @@ class Link_BST implements BST {
             q.data = td;
         }
 
+        // 3-3. 단말 노드에 도달하거나 더 이상 바꿀 수 없을 때까지 3-1 + 3-2를 반복한다
         to_heap_routine(q);
     }
 }
@@ -1406,20 +1405,42 @@ class List_Heap implements Heap {
 
     @Override
     public void insert(int key, Object data_in) {
+
+        /*
+        과정
+        1. 비어있다면 배열 첫 칸에 원소를 삽입한다
+        2. 비어있지 않다면 다음과 같이 한다
+            2-1. 다음 삽입 위치 (i_iloc)에 원소를 삽입한다
+            2-2. 부모와 비교한다 ((i_iter-1)/2, 초기엔 (iloc-1)/2, 좌우 상관 없음)
+            2-3. 비교 결과
+                1. 부모보다 크면 부모와 위치를 바꾼다
+                2. 부모와 같으면 지금까지 바꿨던 것을 원래대로 돌려놓은 뒤 내쫒는다
+                3. 작다면 그대로 종료한다
+            2-4. 루트에 도달하거나 부모보다 클 때까지 2-1~3을 반복한다
+        3. 1, 2 공통으로 삽입 후엔 iloc을 1 증가시킨다
+         */
+
+        // 1. 비어있다면 배열 첫 칸에 원소를 삽입한다
         if (empty()) {
             tree[0] = new Node(key, data_in);
             root = tree[0];
-            iloc++;
+            iloc++; // 3. 삽입 후엔 iloc을 1 증가시킨다
             return;
         }
 
+        // 2.
+        // 2-1. 다음 삽입 위치 (i_iloc)에 원소를 삽입한다
         tree[iloc] = new Node(key, data_in);
         int i_iter = iloc;
         while (i_iter != 0) {
+            // 2-2. 부모와 비교한다
+            // 부모보다 크면 부모와 위치를 바꾼다
             if (tree[i_iter].key > tree[(i_iter - 1) / 2].key) {
                 swap(i_iter, (i_iter - 1) / 2);
                 i_iter = (i_iter - 1) / 2;
             }
+            // 부모와 같으면 지금까지 바꿨던 것을 원래대로 돌려놓은 뒤 내쫒는다
+            // >>> 키가 같은 원소는 있을 수 없기 때문
             else if (tree[i_iter].key == tree[(i_iter - 1) / 2].key) {
                 int i_reloc = iloc;
                 while (i_reloc != i_iter) {
@@ -1429,11 +1450,12 @@ class List_Heap implements Heap {
                 tree[iloc] = null;
                 return;
             }
+            // 3. 작다면 그대로 종료한다
             else {
                 break;
             }
         }
-        iloc++;
+        iloc++; // 3. 삽입 후엔 iloc을 1 증가시킨다
     }
 
     private void swap(int iloc_c, int iloc_p) {
@@ -1446,28 +1468,50 @@ class List_Heap implements Heap {
 
     @Override
     public void delete() {
+        /*
+        과정
+
+        1. 일단 맨 마지막 노드와 루트끼리 위치를 바꾼다
+        2. 바뀐 맨 마지막 노드 (원래는 루트였던 노드)를 삭제한다
+            >>> 힙에서의 삭제는 루트를 없애버린다
+        3. 힙 조건을 만족하기 위하여 바뀐 루트 (원래는 맨 마지막이었던 노드) 부터 재배열한다: del_routine
+            3-1. 부모 위치를 iloc_p, 자식 중 더 큰쪽의 위치를 iloc_c라고 한다
+
+         */
         swap(iloc-1, 0);
         tree[iloc-1] = null;
-        del_routine(1, 0);
+        del_routine(0);
         iloc--;
     }
-    private void del_routine(int iloc_c, int iloc_p) {
-        if (tree[iloc_c] == null || iloc_c * 2 > tree.length) {
+    private void del_routine(int iloc_p) {
+
+        int iloc_c = (iloc_p * 2) + 1;
+
+        if (iloc_c > tree.length) return;
+        if (tree[iloc_c] == null) return;
+
+        if (tree[iloc_c] != null && tree[iloc_c+1] != null) {
+            iloc_c = (tree[iloc_c].key > tree[iloc_c + 1].key) ? iloc_c : iloc_c + 1;
+        }
+        else if (tree[iloc_c+1] != null) {
+            iloc_c = iloc_c + 1;
+        }
+        else if (tree[iloc_c] == null && tree[iloc_c+1] == null) {
             return;
         }
 
-        if (tree[iloc_c].key > tree[iloc_c + 1].key) {
+        if (tree[iloc_c].key > tree[iloc_p].key) {
             swap(iloc_c, iloc_p);
-            del_routine((iloc_c * 2) + 1, iloc_c);
-        }
-        else {
-            swap(iloc_c + 1, iloc_p);
-            del_routine((iloc_c + 1) * 2 + 1, iloc_c + 1);
+            del_routine(iloc_c);
         }
     }
 
     @Override
     public Heap concat(Heap other) {
+
+        /*
+        과정: 큰 힙 하나 새로 만들고 여기에 this, other 순으로 집어넣음
+         */
 
         int h_conc = (int) Math.ceil(
                     Math.log(this.get_cnt()) +
@@ -1493,6 +1537,10 @@ class List_Heap implements Heap {
 
     @Override
     public Heap[] split(int key) {
+
+        /*
+        과정: 힙을 순회하면서 key보다 크면 high, 작으면 low에 삽입
+         */
 
         Heap high = new List_Heap(this.h);
         Heap low = new List_Heap(this.h);
@@ -1642,7 +1690,6 @@ class Link_Heap implements Heap {
             q.add_head(root);
             return;
         }
-        // 여기서부터 시작: (071923 1615)
 
         Node p = q.get_head();
         Node c = new Node(key, data_in);
@@ -1728,25 +1775,6 @@ class Link_Heap implements Heap {
         }
     }
 
-    private Map<Integer, Object> pop() {
-        Node n = q.get_tail();
-        Map<Integer, Object> popped = new HashMap<>();
-        popped.put(root.key, root.data);
-        swap(root, n);
-
-        if (n.parent.left.equals(n)) {
-            n.parent.left = null;
-        }
-        else {
-            n.parent.right = null;
-        }
-        q.rm_tail();
-
-        del_routine(root);
-
-        return popped;
-    }
-
     @Override
     public Heap concat(Heap other) {
 
@@ -1810,7 +1838,7 @@ class Link_Heap implements Heap {
     }
 
     @Override
-    public String describe() { // 여기부터 시작 (072023 1250)
+    public String describe() {
 
         Queue<Node> q_desc = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
@@ -1821,25 +1849,16 @@ class Link_Heap implements Heap {
 
         while (!q_desc.isEmpty()) {
             Node n = q_desc.poll();
+            if (n.left != null) q_desc.add(n.left);
+            if (n.right != null) q_desc.add(n.right);
+
             if (i_iter == (int) Math.pow(2, h) - 1) {
                 sb.append(String.format("LEVEL %d: ", h));
                 h++;
             }
             sb.append(String.format("(%d, %s)", n.key, n.data));
             i_iter++;
-            if ((i_iter != (int) Math.pow(2, h) - 1)) {
-                sb.append(", ");
-            }
-            else {
-                sb.append("\n");
-            }
-
-            if (n.left != null) {
-                q_desc.add(n.left);
-            }
-            if (n.right != null) {
-                q_desc.add(n.right);
-            }
+            sb.append(i_iter != (int) Math.pow(2, h) - 1 ? ", " : "\n");
         }
 
         return sb.toString();
@@ -1851,30 +1870,5 @@ public class DS_ch08 {
 
     public static void main(String[] args) {
 
-        Link_Heap h1 = new Link_Heap();
-        Link_Heap h2 = new Link_Heap();
-        Link_BST lb1 = new Link_BST();
-        Random rnd = new Random(100);
-
-        for (int i = 0; i < 10; i++) {
-            int n = rnd.nextInt(100);
-            lb1.insert(n, n);
-        }
-        Link_Heap h = lb1.to_heap();
-        System.out.println(h.describe());
-
-        // Link_BST 힙으로 바꾸는 것 해야됨!!! (072323 1246)
-
-        /*
-        for (int i = 0; i < 8; i++) {
-            int k = rnd.nextInt(100);
-            h2.insert(k, k);
-        }
-        for (int i = 0; i < 10; i++) {
-            int k = rnd.nextInt(100);
-            lb1.insert(k, k);
-        }
-
-         */
     }
 }
