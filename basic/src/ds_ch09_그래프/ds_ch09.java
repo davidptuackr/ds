@@ -60,16 +60,31 @@ class Edge {
     Edge start_next;
 }
 
-class MLEdge {
+class MLEdge extends Edge {
     int start;
     int end;
-    Edge start_next;
-    Edge end_next;
+    MLEdge start_next;
+    MLEdge end_next;
+
+    public MLEdge(int start, int end) {
+        this.start = start;
+        this.end = end;
+    }
 }
 
 class Vertex {
     int key;
     Edge edges;
+
+    public Vertex() {
+        this.key = -1;
+        this.edges = null;
+    }
+
+    public Vertex(int key) {
+        this.key = key;
+        this.edges = null;
+    }
 }
 
 interface Graph {
@@ -456,10 +471,228 @@ class Adj_matrix_Digraph extends Adj_matrix_Un_Digraph implements Graph{
     }
 }
 
+class List_Share_Un_Digraph implements Graph {
+
+    Vertex[] vertex;
+    final int n;
+
+    public List_Share_Un_Digraph(int n) {
+        vertex = new Vertex[n];
+        this.n = n;
+    }
+
+    @Override
+    public void add_vertex(int key) {
+        if (vertex[key] != null) {
+            System.out.println("V[" + key + "] IS ALREADY EXISTS");
+            return;
+        }
+        vertex[key] = new Vertex(key);
+    }
+
+    @Override
+    public void add_edge(int start, int end) {
+
+        // 0
+        Vertex v_start = get_vertex(start);
+        Vertex v_end = get_vertex(end);
+
+        if (v_start == null || v_end == null) return;
+        if (
+            v_start.edges != null
+            && edge_exists((MLEdge) v_start.edges, start, end)
+        ) return; // 어차피 무방향이면 동일한 간선이니 한쪽만 비교하면 된다
+
+        /*
+        과정
+
+        0.  각 정점 start, end 내 부속된 간선들을 전수조사한다
+            조사 결과, 두 정점 중 어느 하나라도 (start, end), 혹은 (end, start)인 간선이 있다면 종료한다
+
+        1.  0을 통과하면 (start, end)인 새 간선을 하나 만든 후 다음을 실시한다
+            1-1.    정점의 첫 간선을 방문한다
+            1-2.    해당 정점이 간선에서 start, end 중 어디에 표현됐는지 알아낸다
+            1-3.    start >>> start_next, end >>> end_next 를 방문한다
+            1-4.    마지막 부속 간선을 찾아낼 때까지 1-2, 1-3을 반복한다
+            1-5.    마지막 부속 간선에서 start_next, end_next 중 어디에 삽입해야 하는지 loc_next를 알아낸다
+
+        2.  각 정점의 loc_next에 새 간선을 잇는다
+
+        유의할 상황
+
+        1.  부속 간선이 하나도 없는 정점일 경우
+            >>> 부속 간선이 없는 정점에 대해선 0 ~ 1이 생략되면서 예상치 못한 결과가 나올 수 있다
+
+        *** 정점 목록을 이진 탐색 트리로 만들면 탐색이 빠르겠지만 지금은 넘어간다
+         */
+
+        MLEdge start_last_edge = get_last_edge(v_start);
+        MLEdge end_last_edge = get_last_edge(v_end);
+
+        if (start_last_edge == null) {
+            v_start.edges = new MLEdge(start, end);
+            start_last_edge = (MLEdge) v_start.edges;
+        }
+        else if (v_start.key == start_last_edge.start) {
+            start_last_edge.start_next = new MLEdge(start, end);
+            start_last_edge = start_last_edge.start_next;
+        }
+        else if (v_start.key == start_last_edge.end) {
+            start_last_edge.end_next = new MLEdge(start, end);
+            start_last_edge = start_last_edge.end_next;
+        }
+
+        if (end_last_edge == null) {
+            v_end.edges = start_last_edge;
+        }
+        else {
+            if (end_last_edge.start == start || end_last_edge.start == end) {
+                end_last_edge.start_next = start_last_edge;
+            }
+            else if (end_last_edge.end == start || end_last_edge.end == end) {
+                end_last_edge.end_next = start_last_edge;
+            }
+        }
+
+    }
+    private Vertex get_vertex(int key) {
+        for (Vertex v : vertex) {
+            if (v == null) continue;
+            if (v.key == key) return v;
+        }
+        return null;
+    }
+    private MLEdge edge_seeking_routine(MLEdge e, int start, int end) {
+        if (e.start == start) { // e: (start, end) 형태
+            if (e.end == end) return e;
+            if (e.start_next != null) return edge_seeking_routine(e.start_next, start, end);
+            else return null;
+        }
+        else { // e: (end, start) 형태
+            if (e.start == end && e.end == start) return e;
+            if (e.end_next != null) return edge_seeking_routine(e.end_next, start, end);
+            else return null;
+        }
+    }
+    private MLEdge get_last_edge(Vertex v) {
+        if (v.edges == null) return null;
+
+        MLEdge e = (MLEdge) v.edges;
+        MLEdge next = (v.key == e.start) ? e.start_next : e.end_next;
+
+        while (next != null) {
+            e = next;
+            next = (v.key == e.start) ? e.start_next : e.end_next;
+        }
+
+        return e;
+    }
+
+    private boolean edge_exists(MLEdge e, int start, int end) {
+        return edge_seeking_routine(e, start, end) != null;
+    }
+
+    @Override
+    public void delete_vertex(int key) {
+        /*
+        정점 삭제 시 알아내야 할 것
+            - 부속 간선 중 가장 먼저 만나는 간선
+            - 먼저 만나는 간선 이전에 이 간선을 다음 간선으로 하는 간선
+            - 먼저 만나는 간선 다음에 나오는 간선
+
+        아이디어: 삭제하려는 정점의 부속 간선에 대하여 다음을 실시한다
+            1. 부속 간선 e를 방문한다
+            2. e를 참고하는 간선들을 알아낸다. >>> start_next || end_next가 e인 간선을 찾는다. 각각 start_bef, end_bef
+            3. e 다음에 나오는 간선들을 알아낸다 >>> start_next , end_next
+            4. 다음을 실시한다
+                - if e.start == start_bef.start >>> start_bef.start_next = start_next
+                - if e.start == start_bef.end >>> start_bef.end_next = start_next
+                - if e.end == end_bef.start >>> end_bef.start_next = end_next
+                - if e.end == end_bef.end >>> end_bef.end_next = end_next
+            5. 부속 간선 전체에 대하여 2 ~ 4를 반복한다
+         */
+        
+        /*
+        어차피 start, end 중 하나는 그 전의 것을 찾지 않아도 된다
+        한쪽은 오면서 지워졌으니 굳이 찾지 않아도 된다
+         */
+        
+        MLEdge e = (MLEdge) vertex[key].edges;
+        MLEdge prev, start_next, end_next;
+        int key_prev;
+        boolean is_start;
+        
+        while (e != null) {
+            key_prev = e.start != key ? e.start : e.end;
+            prev = seek_previous_edge(key_prev, e);
+            start_next = e.start_next;
+            end_next = e.end_next;
+            
+            if (prev == e) {
+                e = e.start == key ? e.start_next : e.end_next;
+                continue;
+            }
+
+            is_start = prev.start == key_prev;
+
+            if (is_start) {
+                if ((key_prev == start_next.start) || (key_prev == start_next.end)) {
+                    prev.start_next = start_next;
+                }
+                else if ((key_prev == end_next.start) || (key_prev == end_next.end)) {
+                    prev.start_next = end_next;
+                }
+            }
+            else {
+                if ((key_prev == start_next.start) || (key_prev == start_next.end)) {
+                    prev.end_next = start_next;
+                }
+                else if ((key_prev == end_next.start) || (key_prev == end_next.end)) {
+                    prev.end_next = end_next;
+                }
+            }
+
+            e = e.start == key ? e.start_next : e.end_next;
+        }
+        
+        vertex[key] = null;
+    }
+    
+    private MLEdge seek_previous_edge(int key, MLEdge target) {
+        
+        MLEdge e = (MLEdge) vertex[key].edges;
+        MLEdge next = e;
+        
+        while ((next != null) && (next != target)) {
+            e = next;
+            next = e.start == key ? e.start_next : e.end_next;
+        }
+        
+        return e;
+    }
+
+    
+
+    @Override
+    public void delete_edge(int start, int end) {
+
+    }
+
+    @Override
+    public int[] bfs(int start) {
+        return new int[0];
+    }
+
+    @Override
+    public int[] dfs(int start) {
+        return new int[0];
+    }
+}
+
 public class ds_ch09 {
     public static void main(String[] args) {
 
-        /*Adj_matrix_Un_Digraph g1 = new Adj_matrix_Un_Digraph(10);
+        List_Share_Un_Digraph g1 = new List_Share_Un_Digraph(10);
         g1.add_vertex(1);
         g1.add_vertex(3);
         g1.add_vertex(4);
@@ -475,15 +708,7 @@ public class ds_ch09 {
         g1.add_edge(7, 1);
         g1.add_edge(9, 4);
 
-        for (int v : g1.bfs(3)) System.out.print(v);
-        System.out.println("\nIS DISCONNECTED? : " + g1.has_disconnection());
-
-        g1.delete_edge(9, 3);
-        g1.delete_edge(4, 9);
-        for (int v : g1.bfs(3)) System.out.print(v);
-        System.out.println();
-        for (int v : g1.dfs(9)) System.out.print(v);
-        System.out.println("\nIS DISCONNECTED? : " + g1.has_disconnection());*/
+        g1.delete_vertex(8);
 
     }
 
