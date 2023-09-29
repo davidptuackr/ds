@@ -1,0 +1,276 @@
+가중치 그래프 (weighted graph, aka 네트워크)
+    - 간선에 가중치가 있는 그래프
+    - 가중치가 부여된 무방향 그래프의 신장 트리 비용은 신장 트리를 구성하는 모든 간선들의 가중치를 합한 것이 된다
+
+최소 비용 신장 트리 (minimum cost spanning tree)
+    -   트리 내 간선 가중치 합이 최소인 신장 트리
+    -   이 트리를 찾는 방법으로 쿠르스칼, 프림, 솔린 알고리즘을 사용할 수 있다 (셋 다 탐욕적인 기법)
+
+    1.  쿠르스칼
+        -   트리에 비용이 가장 작은 간선부터 '한 번에 한 간선씩' 첨가하는 방법
+        -   신장 트리의 간선 수는 n(E(G))-1
+        -   핵심
+            1.  간선이 최소 비용 순으로 정렬되어 있을 것
+            2.  간선을 추가할 때 사이클이 만들어지는지 알 수 있어야 할 것
+                -   신장 트리에 추가된 정점 목록을 만듦으로서 확인한다
+                -   간선이 추가될 때 이 간선에 연결된 양 끝의 정점 모두 추가된/추가 안된 정점 목록에 있다면
+                    해당 간선은 추가되면 안된다
+                        >>> 한번에 한 간선씩만 추가되기 때문에 양 끝 정점은 서로 다른 목록에 있어야 한다
+                    (단, 처음 시작할 땐 예외)
+                -   알고리즘의 반복은 정점이 한 그룹에 모일 때까지 반복한다
+
+        -   ADL kruskal(G, n) // G: 그래프, n: n(E(G))
+
+                T = null // 최소 비용 신장 트리, member: T.edges, T.vertex
+                edges = E(G)
+                // S0 ~ Sn : V(G)
+
+                while n(E(T)) < n-1 : // 아니면 간선을 쭉 돌기 전 모든 정점이 추가되면 break 해도 될듯 (둘 다 같은 말)
+                    edge e = minimum cost edge in edges
+                    if e.start not in T AND e.end not in T :
+                        add e in T.edges
+                        merge (e.start, e.end) into T.vertex
+
+                if n(E(T)) < n-1 : print("NO SPANNING TREE") // 아니면 T.vertex not equals G(V)
+
+                return T
+            END kruskal
+
+    2.  프림
+        -   간선을 한 번에 하니씩 선정하면서 확장하는 것은 쿠르스칼과 동일함
+        -   차이점은 한 번에 한 트리만 성장시킨다는 점
+        -   즉, 다음과 같다
+            1.  시작은 V(G) 중 아무거나 하나 잡아서 한다
+            2.  1에서 고른 정점에 부속된 간선 중 가장 비용이 작은 것을 고른 뒤
+                고른 간선과, 해당 간선과 연결된 정점을 트리에 추가한다
+            3.  2에서 새로 추가한 정점에 대해 2에서 했던 작업을 똑같이 한다
+        -   핵심
+            1.  고른 간선에서 한 쪽만 트리에 포함될 것 >>> 사이클 방지
+            2.  트리에 정점을 추가할 때마다 모든 (u, v), v not in T인 간선에 대해 비용을 계산해야 한다
+                이 때 (u, v) not in E(G)면 비용은 무한대가 된다.
+                계산이 끝난 다음 트리에 포함시킬 정점은 무한대가 아닌 최소 비용을 가진 T에 인접한 간선의 정점이 된다
+                즉 이전 정점에 부속된 간선보다 비용도 적고 사이클도 만들지 않는다면 확장한 정점의 간선을 무조건 사용하는 것이 아니다
+
+        -   ADL prim(G, i) // i: V(G)[i], 0 ~ n
+
+            T = null
+            add V(G)[i] in T.vertex
+
+            while (n(T.edges) < n-1) :
+                vertex v = next vertex
+                edge e = minimum cost edge which adjacent to v
+                if (e.start in T.vertex and e.end not in T.vertex) :
+                    add e in T.edges
+                    merge (e.start, e.end) into T.vertex
+                else : // 이 경우 사이클이 만들어지는 것이므로 break, 아니면 뒤로 가서 찾아봐야 함
+                    print("NO SPANNING TREE")
+                    return null
+            return T
+
+            END prim
+
+    3.  솔린
+        -   '한 번에 여러 개의 간선을 선택'하는 방식
+        -   과정
+            1.  그래프 정점 단 하나만 있는 n개의 신장 포레스트로 시작한다
+            2.  포레스트마다 정점에 인접하면서 비용이 최소인 간선을 하나씩 고르도록 한다
+            3.  서로 다른 트리가 전부 합쳐질 때까지 반복한다
+        -   핵심
+            1.  서로 다른 트리가 같은 간선을 고른다면
+                하나의 간선만 사용하고 중복된 또 다른 간선은 사용하지 않는다. 추가로, 두 트리를 합친다
+            2.  서로 다른 트리가 비용은 같은 상이한 간선을 고른다면
+                둘 중 한 트리만 간선을 고르게 한다
+
+        - ADL solin(G, n) // n: n(V(G))
+
+            // S0 ~ Sn-1 : 정점 i가 소속된 그룹
+            T = null
+            edges = E(G)
+            List = null // 연산 단계에서 선정된 간선
+            edge e, f
+
+            while (n(T.edges) < n-1 AND edges != null) :
+                for (each Si) :
+                    e = minimum cost edge(u, v) in edges which u in Si AND v not in Si
+                    if (e not in List) : // 여기서 중복 간선은 걸러짐
+                        add e in List
+
+                while (List != null) :
+                    f = polled edge from List // == (u, v)
+                    if (f not in Su OR f not in Sv) :
+                        add f in T.edges
+                        merge Sv into Su
+                        remove f from edges
+
+            if (n(T.edges) != n-1)
+                print("NO SPANNING TREE")
+                return null
+
+            return T
+
+
+최단 경로 탐색
+
+    -   최단 경로: 서로 다른 두 정점까지 갈 때 거치는 간선들의 가중치 합이 최소인 간선 모임
+
+    -   다익스트라: 음의 가중치를 허용하지 않을 경우
+        과정
+            0.  다음과 같이 한다
+                S:      최단 경로를 확정한 정점들. 처음엔 시작점 v만 포함
+                dist:   시작점 v에서 어떤 정점 i 까지의 최단 거리. 이 때 dist[v]=0, 이 외엔 큰 값으로 초기화 (ex. 양의 무한)
+                u:      가장 최근에 S에 첨가된 정점. 처음엔 u <- v
+            1.  u 가 S에 첨가될 때 S에 포함되지 않은 u의 모든 인접 정점 w에 대해 dist[w]를 다시 계산한다
+                이 때 dist[u] + weight(u, w) < dist[w] 일 경우 dist[w] = dist[u] + weight(u, w)로 한다
+                여기까지 하면 다음과 같은 사실을 알 수 있다
+                    -   dist는 S에 포함된 정점만을 경유한 최단 경로가 된다
+                    -   S에 미포함된 정점들 중 x의 dist[x]가 가장 작다고 한다면
+                        x는 v에서 x까지 갈 수 있는 그 어떤 경로도 dist[x]보다 비용이 더 크다
+                        왜냐하면
+                            dist[x]는 이미 S에 있는 정점만을 경유하는 x까지의 최단 경로이고
+                            S에 포함되지 않은 정점 y를 거쳐 x까지 가는 경로는 그 길이가 dist[x]보다 크기 때문이다
+            2.  S에 없으면서 v에 인접한 정점 중 dist가 가장 작은 정점을 다음 u로 설정한다
+            3.  모든 정점에 대한 최단 경로가 결정될 때까지 1, 2를 반복한다
+
+        ADL dijkstra(v, w, n)
+            /*
+                v: 시작점
+                w: 간선의 가중치들
+                n: 정점 수
+            */
+
+            fill each S[i] with false
+            fill each dist[i] with w[v, i]
+            S[v] = true
+            dist[v] = 0
+
+            for (i = 0, i < n-2, i++) :
+                select u which dist[u] = min(dist[j] | S[j] == false AND j in 0 ~ n)
+                S[u] = true
+                for (w = 0, w < n; w++) :
+                    if S[w] is false :
+                        if dist[w] > dist[u] + w[u, w]:
+                            dist[w] = dist[u] + w[u, w]
+
+        END dijkstra
+
+    벨먼 앤 포드: 음의 가중치를 허용한 경우
+        -   음의 가중치를 가진 그래프에 다익스트라 알고리즘을 적용할 경우 문제가 발생한다
+            음의 가중치를 거칠 수록 가중치 총합은 작아지기 때문이다
+        -   때문에 음의 가중치가 허용될 경우 음의 가중치를 갖는 사이클이 허용되면 안된다
+            이는 최단 경로의 간선 수가 n-1개를 넘지 않도록 함으로써 실천한다. 즉 거리 계산에 간선 수의 한도를 이용한다.
+            (만약 경로의 간선 수가 n-1개를 넘으면 이는 사이클이 있다고 본다)
+
+        과정
+            0.  다음과 같이 한다
+                -   v: 시작점
+                -   dist[k, u]: 최대 k 개의 간선을 포함할 수 있을 경우에 v ~ u 의 최단 거리
+            1.
+                -   최단 경로가 최대 k개 (k > 1)의 간선을 포함할 수 있을 때
+                    k-1 개 이하의 간선만 포함하고 있다면
+                    dist[k, u] = dist[k-1, u]다
+                -   최단 경로가 최대 k개 (k > 1)의 간선을 포함할 수 있을 때
+                    k 개의 간선을 포함하고 있다면
+                    이는 u와 인접한 어떤 정점 i 까지의 최단 경로도 포함하게 된다
+                    이 때 시작점에서 i까지의 경로는 최대 k-1 개의 간선으로 구성되고
+                    그 길이는 dist[k-1, i] 이다.
+                    이 때 i는 u에 인접한 간선 중에서 dist[k-1, i] + weight(i, u)를 최소로 만드는 정점일 것이다
+                -   따라서 dist[k, u]는 dist[k-1, u] (k: 2 ~ n-1)로부터 다음을 알 수 있다
+                    dist[k, u] = min(dist[k-1, u], dist[k-1, minimum i] + weight(minimum i, u))
+
+        ADL bellman_and_ford(v, n)
+            // v: 시작점, n: 그래프의 정점 수
+
+            init each dist[i | i: 0 ~ n-1] with weight[v, i]
+            // >>> k==1일 때 dist[i]
+
+            for (k = 2 ; k <= n-1; k++) :
+                for (each u that u != v AND u.indegree > 0) :
+                    // u.indegree > 0 >>> 접근할 수 있는 정점만 고려함을 의미
+                    // indegree < 0 이면 해당 정점 방향의 간선이 없다는 뜻
+                    for (each <i, u> : u에 인접한 정점들을 이어주는 간선, 이 때 i는 u와 인접한 정점의 키) :
+                        if (dist[u] > dist[i] + weight[i, u]) :
+                            dist[u] = dist[i] + weight[i, u]
+                            /*
+                                k개 간선으로 이뤄진 경로의 가중치 dist[i] + weight[i, u]가
+                                k-1개 간선으로 이뤄진 경로의 가중치보다 작다면 경로 갱신
+                                아니면 현행 유지 (이 경로의 간선 수는 k보다 작음)
+                            */
+
+        END bellman_and_ford
+
+    모든 정점 쌍의 최단 경로
+
+        아이디어: 단순 가중치 행렬로 시작하여 이를 모든 정점 쌍의 최단 경로 행렬로 확장하는 것
+
+        과정
+            0.  다음과 같이 한다
+                -   D[kx, i, j]
+                    키가 k0 ~ kx인 정점만 거쳐서 가는 i ~ j 의 경로 가중치
+            1.  단순 가중치 행렬 D[-1]로 시작한다
+            2.  키가 k0 ~ kx인 정점만 가지고 만든 최단 거리 행렬 D[kx]는 다음과 같이 만든다
+            1.  i ~ j 사이에 거쳐갈 수 있는 정점 X를 고려대상 정점 목록 k에 추가했다고 할 때 (즉, k도 고려 대상에 포함했을 때)
+                X가 기존 i ~ j 경로 상에 없던 정점이라면
+                X를 넣어서 만든 i ~ j 경로가
+                X가 없었던 기존의 고려대상 정점 목록 k`에 있는 정점들로 만든 i ~ j 경로보다 가중치가 더 크다는 말이다
+                따라서 정점 고려대상에 X를 추가했더라도 D[k, i, j]의 값은 기존과 같은 D[k`, i, j]로 한다
+
+            2.  i ~ j 사이에 거쳐갈 수 있는 정점 X를 고려대상 정점 목록 k에 추가했다고 할 때 (즉, k도 고려 대상에 포함했을 때)
+                X가 기존 i ~ j 경로 상에 포함되어야 한다면 (즉, 기존 경로보다 X를 거쳐가는 경로가 더 짧다면)
+                이 경로는 i ~ X, X ~ j 경로로 이뤄진 것이다
+                이 때 i ~ X, X ~ j 는 모두 최단 경로여야 하고
+                이 경로 상에 있는 정점의 키는 k`에 속해있는 것이어야 한다
+                따라서 두 경로의 거리는 각각 D[k`, i, X], D[k`, X, j]가 된다
+
+            3.  1, 2를 종합했을 때 D[k, i, j]는 다음과 같이 만들 수 있다
+                D[k, i, j] = min(D[k`, i, j], D[k`, i, X] + D[k`, X, j])
+
+        ADL all_shortest_path(n)
+
+            init D with weights[i, j]
+
+            for (k in V.keys) :
+                for (i in V.keys) :
+                    for (j in V.keys) :
+                        if (D[i, j] > D[i, k] + D[k, j]) :
+                            D[i, j] = D[i, k] + D[k, j]
+
+        END all_shortest_path
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*** 없으면 뒤로 가서 찾아보는 것 추가
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
