@@ -23,30 +23,29 @@ package ds_ch10_가중치그래프;
             3.  간선 수가 n-1이 되면 종료
  */
 
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
+
+class Edge {
+    int weight;
+    int v_left;
+    int v_right;
+    Edge l_next;
+    Edge r_next;
+
+    Edge(int l, int r, int w) {
+        v_left = l;
+        v_right = r;
+        weight = w;
+    }
+}
 
 class Graph {
 
-    class Edge {
-        int weight;
-        int v_left;
-        int v_right;
-        Edge l_next;
-        Edge r_next;
-
-        private Edge(int w, int l, int r) {
-            weight = w;
-            v_left = l;
-            v_right = r;
-        }
-    }
-
     HashMap<Integer, Edge> vertex;
-    Edge edges;
 
     public Graph() {
         vertex = new HashMap<>();
-        edges = null;
     }
 
     public void add_vertex(int key) {
@@ -56,7 +55,7 @@ class Graph {
         vertex.put(key, null);
     }
 
-    public void add_edge(int weight, int k1, int k2) {
+    public void add_edge(int k1, int k2, int weight) {
         // 연결하려는 정점 중 하나라도 없다면 이을 수 없으므로 작업 취소
         if (!vertex.containsKey(k1) || !vertex.containsKey(k2)) {
             return;
@@ -66,41 +65,39 @@ class Graph {
         int v_left = Math.min(k1, k2);
         int v_right = Math.max(k1, k2);
 
-        Edge e_new = new Edge(weight, v_left, v_right); // 새로 추가할 간선
-        Edge e_iter;                                    // 간선 목록 순회 포인터
+        Edge e = new Edge(v_left, v_right, weight); // 새로 추가할 간선
+        Edge e_iter = seek_last_edge(e.v_left); // 간선 목록 순회 포인터
 
         // 새 간선의 왼쪽 정점 검사
         // 새 간선의 왼쪽 정점에 간선이 있다면 왼쪽 정점의 마지막 간선이 무엇인지 파악
-        e_iter = seek_last_edge(v_left);
         if (e_iter == null) { // 왼쪽 정점에 부속 간선이 없다면 null을 새 간선으로 대체
-            vertex.replace(v_left, e_new);
+            vertex.replace(e.v_left, e);
         }
         else { // 왼쪽 정점에 간선이 있다면 마지막 간선 다음 간선으로 추가
-            if (e_iter.v_left == e_new.v_left) { // 정점이 마지막 간선의 왼쪽에 표시됐다면 마지막 간선의 l_next로 추가
-                e_iter.l_next = e_new;
+            if (e_iter.v_left == e.v_left) { // 정점이 마지막 간선의 왼쪽에 표시됐다면 마지막 간선의 l_next로 추가
+                e_iter.l_next = e;
             }
             else { // 아니면 마지막 간선의 r_next로 추가
-                e_iter.r_next = e_new;
+                e_iter.r_next = e;
             }
         }
 
         // 새 간선의 오른쪽 검사
         // 새 간선의 오른쪽 정점에 간선이 없다면 null을 새 간선으로 대체
-        e_iter = seek_last_edge(v_right);
+        e_iter = seek_last_edge(e.v_right);
         if (e_iter == null) {
-            vertex.replace(v_right, e_new);
+            vertex.replace(e.v_right, e);
         }
         else { // 오른쪽 정점에 간선이 있다면 마지막 간선 다음 간선으로 추가
-            if (e_iter.v_left == e_new.v_left) {
-                e_iter.l_next = e_new;
+            if (e_iter.v_left == e.v_right) {
+                e_iter.l_next = e;
             }
             else {
-                e_iter.r_next = e_new;
+                e_iter.r_next = e;
             }
         }
-
-        // 만든 간선을 정점의 새 멤버로 추가하는 부분 구현할 것 (091023)
     }
+
     private Edge seek_last_edge(int key) {
         Edge e_target = vertex.get(key);
         Edge e_iter = e_target;
@@ -116,13 +113,65 @@ class Graph {
 
 class Traveler {
 
-    static void Kruskal(Object g) {
+    public static Graph Kruskal(Graph g) {
 
+        /*
+        쿠르스칼 복습
+            과정 : 그래프 내에서 비용이 가장 작은 간선을 고르는 것으로 시작해 그 다음 작은 간선을 선택하는 식으로 확장하는 방식
+            사이클 검사 : 간선을 추가할 때 간선으로 연결한 두 정점이 모두 신장 트리에 있으면 추가하지 않고 다른 간선을 선택한다
+         */
+
+        Graph res = new Graph();
+        int n_edges = 0;
+        Iterator<Edge> edges = get_sorted_edge_list(g).iterator();    // 가중치 순으로 오름차순 정렬된 간선 목록 만들기
+        Set<Integer> keys = g.vertex.keySet();
+
+        Edge e_iter;
+        int v_left, v_right;
+
+        while ((n_edges != g.vertex.size() - 1) && (edges.hasNext())) {
+            e_iter = edges.next();
+            v_left = e_iter.v_left;
+            v_right = e_iter.v_right;
+            if (res.vertex.containsKey(v_left) && res.vertex.containsKey(v_right)) {
+                continue;
+            }
+            if (!res.vertex.containsKey(v_left)) {
+                res.add_vertex(v_left);
+            }
+            if (!res.vertex.containsKey(v_right)) {
+                res.add_vertex(v_right);
+            }
+            res.add_edge(v_left, v_right, e_iter.weight);
+
+            n_edges++;
+        }
+        if (n_edges != g.vertex.size() - 1) {
+            System.out.println("FAIL TO CREATE SPANNING TREE");
+            return null;
+        }
+
+        return res;
     }
 
+    private static ArrayList<Edge> get_sorted_edge_list(Graph g) {
+        Iterator<Integer> keys = g.vertex.keySet().iterator();
+        Set<Edge> edge_set = new HashSet<>();
+
+        while (keys.hasNext()) {
+            int key = keys.next();
+            Edge e_iter = g.vertex.get(key);
+            while (e_iter != null) {
+                edge_set.add(e_iter);
+                e_iter = (e_iter.v_left == key) ? e_iter.l_next : e_iter.r_next;
+            }
+        }
+        ArrayList<Edge> edge_list = new ArrayList<>(edge_set);
+        edge_list.sort(Comparator.comparingInt(o -> o.weight));
+
+        return edge_list;
+    }
 }
-
-
 
 public class DS_ch10 {
 
@@ -137,11 +186,21 @@ public class DS_ch10 {
         g.add_vertex(10);
         g.add_vertex(6);
 
-        g.add_edge(3, 1, 4);
-        g.add_edge(5, 10, 1);
-        g.add_edge(999, -1, 999);
+        g.add_edge(4, 1, 3);
+        g.add_edge(1, 10, 5);
         g.add_edge(7, 4, 7);
+        g.add_edge(7, 1, 1);
+        g.add_edge(6, 3, 9);
+        g.add_edge(3, 1, 2);
+        g.add_edge(3, 4, 4);
+        g.add_edge(10, 4, 8);
+        g.add_edge(7, 6, 17);
 
+        // 사이클 테스트 + 같읕 가중치의 경우 테스트
+        g.add_edge(10, 6, 7);
+        g.add_edge(10, 3, 5);
+
+        Graph kruskal_res = Traveler.Kruskal(g);
     }
 
 }
