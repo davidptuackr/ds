@@ -24,7 +24,6 @@ package ds_ch10_가중치그래프;
  */
 
 import java.util.HashMap;
-import java.util.Vector;
 
 class Graph {
 
@@ -68,21 +67,15 @@ class Graph {
         int v_right = Math.max(k1, k2);
 
         Edge e_new = new Edge(weight, v_left, v_right); // 새로 추가할 간선
-        Edge e_left = vertex.get(v_left);               // 왼쪽 정점의 간선 목록
-        Edge e_right = vertex.get(v_right);             // 오른쪽 정점의 간선 목록
         Edge e_iter;                                    // 간선 목록 순회 포인터
 
         // 새 간선의 왼쪽 정점 검사
         // 새 간선의 왼쪽 정점에 간선이 있다면 왼쪽 정점의 마지막 간선이 무엇인지 파악
-        e_iter = e_left;
+        e_iter = seek_last_edge(v_left);
         if (e_iter == null) { // 왼쪽 정점에 부속 간선이 없다면 null을 새 간선으로 대체
             vertex.replace(v_left, e_new);
         }
         else { // 왼쪽 정점에 간선이 있다면 마지막 간선 다음 간선으로 추가
-            while (e_left != null) {
-                e_iter = e_left;
-                e_left = (v_left == e_left.v_left) ? e_left.l_next : e_left.r_next;
-            }
             if (e_iter.v_left == e_new.v_left) { // 정점이 마지막 간선의 왼쪽에 표시됐다면 마지막 간선의 l_next로 추가
                 e_iter.l_next = e_new;
             }
@@ -93,15 +86,11 @@ class Graph {
 
         // 새 간선의 오른쪽 검사
         // 새 간선의 오른쪽 정점에 간선이 없다면 null을 새 간선으로 대체
-        e_iter = e_right;
+        e_iter = seek_last_edge(v_right);
         if (e_iter == null) {
             vertex.replace(v_right, e_new);
         }
         else { // 오른쪽 정점에 간선이 있다면 마지막 간선 다음 간선으로 추가
-            while (e_right != null) {
-                e_iter = e_right;
-                e_right = (v_right == e_right.v_right) ? e_right.r_next : e_right.l_next;
-            }
             if (e_iter.v_left == e_new.v_left) {
                 e_iter.l_next = e_new;
             }
