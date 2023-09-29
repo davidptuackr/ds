@@ -140,6 +140,7 @@ public class DS_ch10 {
         g.add_edge(3, 1, 4);
         g.add_edge(5, 10, 1);
         g.add_edge(999, -1, 999);
+        g.add_edge(7, 4, 7);
 
     }
 
