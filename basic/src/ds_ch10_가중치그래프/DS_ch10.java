@@ -38,6 +38,10 @@ class Edge {
         v_right = r;
         weight = w;
     }
+
+    public Edge next(int v_start) {
+        return v_left == v_start ? l_next : r_next;
+    }
 }
 
 class Graph {
@@ -171,6 +175,65 @@ class Traveler {
 
         return edge_list;
     }
+
+    public static Graph prim(Graph g, int start) {
+
+        /*
+        프림 복습
+            과정
+                -   시작은 정점 중 아무거나 하나 골라서 한다
+                -   정점에 부속한 가장 저비용인 간선 e를 고른다
+                -   현재 신장 트리 내에 있는 정점 중 e 끝의 정점과 이어진 간선 준 최저비용의 간선 f를 고른다
+                -   e, f 중 비용이 더 적은 간선과 그 끝의 정점 w를 추가한다
+                -   w를 대상으로 지금까지 했던 작업을 똑같이 한다
+                -   위 작업은 간선 수가 (정점 개수 - 1) 만큼 될 때까지 반복한다
+            사이클 방지 대책
+                -   정점 추가 시 신장 트리에 이미 있는 정점이라면 제외한다
+                -   그 다음으로 비용이 적은 간선을 고려한다
+         */
+        
+        /*
+        수정할 것: 최저 비용의 간선이 사이클을 만든다면 그 다음으로 비용이 적으면서 사이클을 만들지 않는 간선을 찾아내도록 할 것
+         */
+        Graph res = new Graph();
+        int n_edges = 0;
+        Edge e_iter, e_min;
+        int v_end;
+
+        res.add_vertex(start);
+
+        while (n_edges != g.vertex.size() - 1) {
+
+            Set<Integer> res_keys = res.vertex.keySet();
+            e_min = null;
+
+            for (Integer key_iter : res_keys) {
+                e_iter = g.vertex.get(key_iter);
+                while (e_iter != null) {
+                    v_end = (key_iter == e_iter.v_left) ? e_iter.v_right : e_iter.v_left;
+                    if (!res.vertex.containsKey(v_end)) {
+                        if (e_min == null || e_min.weight >= e_iter.weight) {
+                            e_min = e_iter;
+                        }
+                    }
+                    e_iter = e_iter.next(key_iter);
+                }
+            }
+            assert e_min != null;
+            if (!res.vertex.containsKey(e_min.v_left)) {
+                res.add_vertex(e_min.v_left);
+            }
+            if (!res.vertex.containsKey(e_min.v_right)) {
+                res.add_vertex(e_min.v_right);
+            }
+            res.add_edge(e_min.v_left, e_min.v_right, e_min.weight);
+
+            n_edges++;
+        }
+
+        return res;
+    }
+
 }
 
 public class DS_ch10 {
@@ -200,7 +263,8 @@ public class DS_ch10 {
         g.add_edge(10, 6, 7);
         g.add_edge(10, 3, 5);
 
-        Graph kruskal_res = Traveler.Kruskal(g);
+        //Graph kruskal_res = Traveler.Kruskal(g);
+        Graph prim_res = Traveler.prim(g, 4);
     }
 
 }
