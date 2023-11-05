@@ -24,7 +24,6 @@ package ds_ch10_가중치그래프;
  */
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 class Edge {
     int weight;
@@ -64,13 +63,22 @@ class Graph {
         if (!vertex.containsKey(k1) || !vertex.containsKey(k2)) {
             return;
         }
+        // 연결하는 위치와 가중치가 동일하다면 똑같은걸 또 놓는 것이므로 취소
+        Edge e_iter = this.vertex.get(k1);
+
+        while (e_iter != null) {
+            if (e_iter.v_left == k1 && e_iter.v_right == k2 && e_iter.weight == weight) {
+                return;
+            }
+            e_iter = e_iter.next(k1);
+        }
 
         // (1, 3, 1 다음, 3 다음) 형태로 저장되도록 작은 쪽을 left로 지정
         int v_left = Math.min(k1, k2);
         int v_right = Math.max(k1, k2);
 
         Edge e = new Edge(v_left, v_right, weight); // 새로 추가할 간선
-        Edge e_iter = seek_last_edge(e.v_left); // 간선 목록 순회 포인터
+        e_iter = seek_last_edge(e.v_left); // 간선 목록 순회 포인터
 
         // 새 간선의 왼쪽 정점 검사
         // 새 간선의 왼쪽 정점에 간선이 있다면 왼쪽 정점의 마지막 간선이 무엇인지 파악
@@ -234,6 +242,232 @@ class Traveler {
         return res;
     }
 
+    /*public static Graph solin(Graph g, int n_start) {
+
+        *//*
+        솔린 복습
+
+        과정
+            -   처음엔 >>> 정점 수 만큼의 트리 (n개) <<< 로 시작한다
+            -   각 트리별로 소속된 정점들 내에서 가장 가중치가 작으면서 사이클을 만들지 않는 간선을 선택한다
+            -   후술한 주의사항을 준수하면서 단 하나의 신장 트리를 완성시킨다
+
+        주의사항
+            -   트리들이 가중치가 같으면서 서로 다른 간선을 골랐을 경우
+                >   한 쪽 트리만 간선을 선택하도록 한다
+
+            -   트리들이 가중치가 같으면서 서로 같은 간선을 골랐을 경우
+                >   해당 간선을 선택하고 트리를 합친다
+         *//*
+
+        Graph res = new Graph();
+        Graph[] forest = new Graph[n_start];
+        Queue<Edge> edges = new LinkedList<>();
+        Iterator<Integer> it = g.vertex.keySet().iterator();
+        int n_edges = 0;
+        int v_end;
+        Edge e_iter, e_min;
+        Graph tree_left = null, tree_right = null;
+
+        for (int i = 0; i < n_start && it.hasNext(); i++) {
+            forest[i] = new Graph();
+            forest[i].add_vertex(it.next());
+        }
+
+        while (n_edges < g.vertex.size() - 1) {
+
+            *//*for (int i : res.vertex.keySet()) {
+                e_iter = g.vertex.get(i);
+                while (e_iter != null) {
+                    v_end = (i == e_iter.v_left) ? e_iter.v_right : e_iter.v_left;
+                    if (!res.vertex.containsKey(v_end)) {
+                        if (e_min == null || e_min.weight >= e_iter.weight) {
+                            e_min = e_iter;
+                        }
+                    }
+                    e_iter = e_iter.next(i);
+                }
+                edges.add(e_iter);
+            }*//*
+            for (Graph tree : forest) {
+                e_min = null;
+                for (Integer key_iter : tree.vertex.keySet()) {
+                    e_iter = g.vertex.get(key_iter);
+                    while (e_iter != null) {
+                        v_end = (key_iter == e_iter.v_left) ? e_iter.v_right : e_iter.v_left;
+                        if (!tree.vertex.containsKey(v_end)) {
+                            if (e_min == null || e_min.weight >= e_iter.weight) {
+                                e_min = e_iter;
+                            }
+                        }
+                        e_iter = e_iter.next(key_iter);
+                    }
+                }
+                if (!edges.contains(e_min)) {
+                    edges.add(e_min);
+                }
+            }
+
+            while (!edges.isEmpty()) {
+                e_iter = edges.poll();
+                for (Graph tree : forest) {
+                    if (tree.vertex.containsKey(e_iter.v_left)) {
+                        tree_left = tree;
+                    }
+                    else if (tree.vertex.containsKey(e_iter.v_right)) {
+                        tree_right = tree;
+                    }
+                }
+                if (tree_left != null && tree_right != null) {
+                    if (!tree_left.vertex.containsValue(e_iter) || !tree_right.vertex.containsValue(e_iter)) {
+                        // merge tree
+                        // START FROM HERE (100823 1604)
+                    }
+                }
+            }
+
+            n_edges++;
+        }
+
+        return res;
+    }*/
+
+    public static Graph solin(Graph g) {
+
+        /*
+        솔린 복습
+
+        과정
+            -   처음엔 >>> 정점 수 만큼의 트리 (n개) <<< 로 시작한다
+            -   각 트리별로 소속된 정점들 내에서 가장 가중치가 작으면서 사이클을 만들지 않는 간선을 선택한다
+            -   후술한 주의사항을 준수하면서 단 하나의 신장 트리를 완성시킨다
+
+        주의사항
+            -   트리들이 가중치가 같으면서 서로 다른 간선을 골랐을 경우
+                >   한 쪽 트리만 간선을 선택하도록 한다
+
+            -   트리들이 가중치가 같으면서 서로 같은 간선을 골랐을 경우
+                >   해당 간선을 선택하고 트리를 합친다
+         */
+
+        /*
+        시도해볼 방법 (110323)
+
+            1.  다음을 준비한다
+                Graph res : 결과물
+                Graph List forest
+                    간선을 선택할 수 있는 트리들을 나타냄.
+                    처음엔 하나의 정점으로만 이뤄졌다 시간이 갈수록 합쳐지면서 리스트 길이는 줄고 요소들의 몸칩은 커진다
+                List edge_picked
+                    각 트리에서 선택한 간선
+                    edge_picked[i] 는 forest[i] 가 선택한 간선
+                Graph tree_left, tree_right
+                    트리 병합에 사용할 임시 변수
+                    서로 동일한 간선을 고른 트리들로
+                    tree_left : v_left 만 포함한 트리, tree_right : v_right 만 포함한 트리로 한다
+
+         */
+
+        Graph res = new Graph();
+        Vector<Graph> forest = new Vector<>();
+        Vector<Edge> edge_picked = new Vector<>();
+        int n_edges = 0;
+        int v_end, i;
+        Edge e_iter, e_min;
+        Graph tree_left, tree_right;
+
+        for (Integer v : g.vertex.keySet()) {
+            Graph t = new Graph();
+            t.add_vertex(v);
+            forest.add(t);
+            edge_picked.add(null);
+        }
+
+        while (n_edges < g.vertex.size() - 1) {
+            tree_left = null;
+            tree_right = null;
+            i = 0;
+
+            for (Graph tree : forest) { // 각 트리에 대해 조사
+                e_min = null;
+                for (Integer key_iter : tree.vertex.keySet()) { // 각 트리 내 정점에 대해 조사
+                    e_iter = g.vertex.get(key_iter);
+                    while (e_iter != null) {
+                        v_end = (key_iter == e_iter.v_left) ? e_iter.v_right : e_iter.v_left;
+                        if (!tree.vertex.containsKey(v_end)) { // v_end가 트리에 없고 (즉, 이 간선을 넣어도 사이클이 안생기고)
+                            if (e_min == null || e_min.weight >= e_iter.weight) { // 최소 간선이 정해지지 않았거나 더 작은 간선일 때
+                                e_min = e_iter; // 최소 간선 갱신
+                            }
+                        }
+                        e_iter = e_iter.next(key_iter);
+                    }
+                }
+                if (!edge_picked.contains(e_min)) {
+                    edge_picked.setElementAt(e_min, i);
+                }
+                i++;
+            }
+            i = 0;
+
+            /*
+            ConcurrentModificationException
+                컬렉션 객체를 수정할 때 발생
+                컬렉션을 순회하는 Iterator의 modCount와 컬렉션의 modCount가 다를 경우 발생
+                즉, 원본을 이용해 순회 객체를 만들었는데 중간에 원본에 수정이 가해지면 아까 만든 순회 객체는 어떻할지 모르게 되는 것
+             */
+
+            Iterator<Edge> eit = edge_picked.iterator();
+
+            while (eit.hasNext()) {
+                Edge e = (Edge) eit.next();
+                e_iter = e;
+                if (e != null) {
+                    for (Graph tree : forest) {
+                        if (tree.vertex.containsKey(e_iter.v_left)) {
+                            tree_left = tree;
+                        } else if (tree.vertex.containsKey(e_iter.v_right)) {
+                            tree_right = tree;
+                        }
+                    }
+                    assert tree_left != null;
+                    assert tree_right != null;
+                    if (!tree_left.vertex.containsValue(e_iter) || !tree_right.vertex.containsValue(e_iter)) {
+                        for (Integer key_iter : tree_left.vertex.keySet()) {
+                            tree_right.add_vertex(key_iter);
+                        }
+                        for (Integer key_iter : tree_left.vertex.keySet()) {
+                            e_iter = tree_left.vertex.get(key_iter);
+                            while (e_iter != null) {
+                                tree_right.add_edge(e_iter.v_left, e_iter.v_right, e_iter.weight);
+                                e_iter = e_iter.next(key_iter);
+                            }
+                        }
+                        tree_right.add_edge(e.v_left, e.v_right, e.weight);
+                        if (tree_left.vertex.size() > tree_right.vertex.size()) {
+                            forest.remove(tree_right);
+                        }
+                        else {
+                            forest.remove(tree_left);
+                        }
+                        eit.remove();
+                    }
+                    n_edges++;
+                }
+                else {
+                    i++;
+                }
+            }
+            edge_picked.removeAllElements();
+        }
+
+        res = forest.get(0);
+
+        return res;
+    }
+
+    private static boolean is_member(Graph g, Edge e) {
+        return g.vertex.containsKey(e.v_left) && g.vertex.containsKey(e.v_right);
+    }
 }
 
 public class DS_ch10 {
@@ -264,7 +498,8 @@ public class DS_ch10 {
         g.add_edge(10, 3, 5);
 
         //Graph kruskal_res = Traveler.Kruskal(g);
-        Graph prim_res = Traveler.prim(g, 4);
+        //Graph prim_res = Traveler.prim(g, 4);
+        Graph solin_res = Traveler.solin(g);
     }
 
 }
