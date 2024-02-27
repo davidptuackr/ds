@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include "my_sorting.h"
 
 void swap(int* a, int* b)
@@ -45,4 +42,16 @@ void my_insertion_sort(int* data, int len)
 		}
 		
 	}
+}
+
+void describe(void* data, int len_data)
+{
+	int* p_data = data;
+
+	for (int i = 0; i < len_data; i++)
+	{
+		printf("DATA[%d]: %d\n", i, *p_data);
+		p_data++;
+	}
+	printf("\n\n");
 }
