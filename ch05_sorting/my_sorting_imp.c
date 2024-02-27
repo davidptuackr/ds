@@ -55,3 +55,40 @@ void describe(void* data, int len_data)
 	}
 	printf("\n\n");
 }
+
+void my_quick_sort(int* data, int len_data)
+{
+	qsort_loop(data, 0, len_data);
+}
+
+void qsort_loop(int* part, int part_start, int part_end)
+{
+	if (part_end - part_start <= 2)
+	{
+		if (part[part_start] > part[part_end]) {
+			swap(&part[part_start], &part[part_end]);
+			return;
+		}
+	}
+
+	int* pivot = part;
+	int i_less = part_start + 1;
+	int i_big = part_end;
+
+	while (i_big != i_less)
+	{
+		while ((part[i_less] <= *pivot) && (i_big != i_less))
+		{
+			i_less++;
+		}
+		while ((part[i_big] <= *pivot) && (i_big != i_less))
+		{
+			i_big--;
+		}
+		swap(&part[i_less], &part[i_big]);
+	}
+	swap(&part[i_less], pivot);
+
+	qsort_loop(part, part_start, i_less - 1);
+	qsort_loop(&part[i_big + 1], i_big + 1, part_end);
+}
