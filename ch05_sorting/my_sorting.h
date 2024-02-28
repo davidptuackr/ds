@@ -17,6 +17,9 @@ void my_insertion_sort(int* data, int len);
 void describe(void* data, int len_data);
 void my_quick_sort(int* data, int len_data);
 void qsort_loop(int* part, int part_start, int part_end);
+void my_qsort_p(int* data, int len_data);
+void qsort_loop_p(int* part, int* part_start, int* part_end);
+
 
 #endif // !MY_SORTING_IMP_H
 

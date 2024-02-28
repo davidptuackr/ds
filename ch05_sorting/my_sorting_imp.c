@@ -101,3 +101,39 @@ void qsort_loop(int* part, int part_start, int part_end)
 	qsort_loop(part, part_start, i_big - 1);
 	qsort_loop(part, i_big + 1, part_end);
 }
+
+void qsort_loop_p(int* part, int* part_start, int* part_end)
+{
+	if (part_start >= part_end) // 주소값 비교
+	{
+		return;
+	}
+
+	int* pivot = part_start;
+	int* i_less = part_start + 1;
+	int* i_big = part_end;
+
+	while (i_big > i_less) // 주소값 비교
+	{
+		while ((*i_less <= *pivot) && (i_big > i_less))
+		{
+			i_less++;
+		}
+		while ((*i_big > *pivot) && (i_big > i_less))
+		{
+			i_big--;
+		}
+		swap(i_less, i_big);
+	}
+	if (*i_big > *pivot) i_big--;
+
+	swap(i_big, pivot);
+
+	qsort_loop_p(part, part_start, i_big - 1);
+	qsort_loop_p(part, i_big + 1, part_end);
+}
+
+void my_qsort_p(int* data, int len_data)
+{
+	qsort_loop_p(data, data, data + (len_data - 1));
+}
