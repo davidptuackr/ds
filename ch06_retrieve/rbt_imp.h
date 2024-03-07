@@ -37,6 +37,6 @@ void rotate_right(RBT* tree, RBT_Node* pivot);
 void reshape_after_insert(RBT* tree, RBT_Node* node);
 void reshape_after_deleete(RBT* tree, RBT_Node* node, RBT_Node* node_parent);
 
-
+void describe(RBT* tree);
 
 #endif // !MY_RBT_IMP
