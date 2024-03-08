@@ -50,7 +50,8 @@ RBT_Node* rbt_search(RBT* tree, int data)
     while ((node_iter != tree->nil) && (node_iter->data != data))
     {
         if (node_iter->data > data) node_iter = node_iter->left;
-        else node_iter = node_iter->right;
+        else if (node_iter->data < data) node_iter = node_iter->right; //
+        else break;
     }
 
     return node_iter;
@@ -111,93 +112,66 @@ int rbt_delete(RBT* tree, int data)
         return false;
     }
 
-    RBT_Node* to_delete = rbt_search(tree, data);
+    RBT_Node* to_paste = rbt_search(tree, data);
+    RBT_Node* removed;
+    RBT_Node* to_handle;
+    RBT_Node* to_handle_parent;
 
-    if (to_delete == NULL)
+    if (to_paste == NULL)
     {
         printf("%d NOT IN TREE, ABORT\n\n", data);
         return -1;
     }
-    //printf("to delete color: %d\t", to_delete->color);
-
-    RBT_Node* right_min = to_delete->right;
-    RBT_Node* to_handle;
-    RBT_Node* to_handle_parent;
-
-    while (right_min != tree->nil && right_min->left != tree->nil)
+    
+    if (to_paste->left == tree->nil || to_paste->right == tree->nil) // case when to_paste has single node for child
     {
-        right_min = right_min->left;
-    }
-
-    int del_value = to_delete->data;
-    // to_delete->data = right_min->data; // <<<<<
-
-    if (right_min == tree->nil)
-    {
-        //printf("right min is null");
-        to_handle = tree->nil;
-        to_handle_parent = to_delete->parent;
-
-        if (to_delete == to_delete->parent->left)
-        {
-            to_delete->parent->left = tree->nil;
-        }
-        else
-        {
-            to_delete->parent->right = tree->nil;
-        }
+        removed = to_paste;
     }
     else
     {
-        //printf("right min color: %d", right_min->color);
-        to_handle = right_min->right;
-
-        if (right_min == right_min->parent->left)
+        removed = to_paste->right;
+        while (removed->left != tree->nil)
         {
-            right_min->parent->left = to_handle;
+            removed = removed->left;
+        }
+        to_paste->data = removed->data;
+    }
+
+    if (removed->left != tree->nil)
+    {
+        to_handle = removed->left;
+    }
+    else
+    {
+        to_handle = removed->right;
+    }
+
+    to_handle->parent = removed->right;
+
+    if (removed->parent == NULL)
+    {
+        tree->root = to_handle;
+    }
+    else
+    {
+        if (removed == removed->parent->left)
+        {
+            removed->parent->left = to_handle;
         }
         else
         {
-            right_min->parent->right = right_min->right;
+            removed->parent->right = to_handle;
         }
-
-        if (right_min->right != tree->nil)
-        {
-            right_min->right->parent = right_min->parent;
-        }
-        
-        to_delete->data = right_min->data;
-        to_handle_parent = right_min->parent; // <<<<<
-        
     }
-    /*
-    if (right_min == right_min->parent->left)
+    
+    if (removed->color == BLACK)
     {
-        right_min->parent->left = right_min->right;
-        right_min->right->parent = right_min->parent;
-    }
-    to_handle = right_min->right;
-    to_handle_parent = right_min->parent;
-    */
-    /*
-    printf("\tto delete: %d\t", del_value);
-    printf("to_handle_parent: %d\t", to_handle_parent->data);
-    printf("to_handle_parent->left : %s\t", to_handle_parent->left);
-    printf("to_handle_parent->right : %s\t\n", to_handle_parent->right);
-    */
-    if (
-        (to_handle_parent->left != tree->nil && to_handle_parent->right != tree->nil) && 
-        (right_min == tree->nil || right_min->color == BLACK)
-        )
-    {
-        
-
-        reshape_after_deleete(tree, to_handle, to_handle_parent);
+        reshape_after_deleete(tree, to_handle, removed->parent);
     }
 
-    free(right_min);
+    free(removed);
 
-    return del_value;
+    return 0;
 }
 
 void rotate_left(RBT* tree, RBT_Node* pivot)
