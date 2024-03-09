@@ -1,4 +1,5 @@
 #include "rbt_imp.h"
+#include <math.h>
 
 RBT_Node* create_node(int data)
 {
@@ -137,7 +138,7 @@ int rbt_delete(RBT* tree, int data)
         to_paste->data = removed->data;
     }
 
-    if (removed->left != tree->nil)
+    if (removed->left != tree->nil) // 보충 노드 삭제 후 대체할 노드가 무엇인지 지정
     {
         to_handle = removed->left;
     }
@@ -146,7 +147,11 @@ int rbt_delete(RBT* tree, int data)
         to_handle = removed->right;
     }
 
-    to_handle->parent = removed->right;
+    if (to_handle != tree->nil)
+    {
+        to_handle->parent = removed->right;
+    }
+    
 
     if (removed->parent == NULL)
     {
@@ -325,10 +330,8 @@ void reshape_after_deleete(RBT* tree, RBT_Node* node, RBT_Node* node_parent)
     RBT_Node* to_handle = node;
     RBT_Node* parent = node_parent;
     RBT_Node* sib;
-    RBT_Node* left_cousin;
-    RBT_Node* right_cousin;
 
-    while ((to_handle == tree->nil) || (to_handle->color == BLACK && to_handle->parent != NULL)) // <<<<<<
+    while (to_handle == tree->nil || (to_handle->color == BLACK && to_handle->parent != NULL)) // <<<<<<
     {
         if (to_handle == tree->nil)
         {
@@ -342,27 +345,18 @@ void reshape_after_deleete(RBT* tree, RBT_Node* node, RBT_Node* node_parent)
         if (to_handle == parent->left)
         {
             sib = parent->right;
-            if (sib != tree->nil)
-            {
-                left_cousin = sib->left;
-                right_cousin = sib->right;
-            }
-            else
-            {
-                left_cousin = tree->nil;
-                right_cousin = tree->nil;
-            }
             
             if (sib != tree->nil && sib->color == RED)
             {
                 sib->color = BLACK;
-                to_handle = parent;
+                parent->color = RED;
+                rotate_left(tree, parent);
             }
             else
             {
                 if (
-                    (left_cousin == tree->nil || left_cousin->color == BLACK) &&
-                    (right_cousin == tree->nil || right_cousin->color == BLACK) // <<<<<
+                    (sib->left == tree->nil || sib->left->color == BLACK) &&
+                    (sib->right == tree->nil || sib->right->color == BLACK) // <<<<<
                     )
                 {
                     sib->color = RED;
@@ -372,19 +366,19 @@ void reshape_after_deleete(RBT* tree, RBT_Node* node, RBT_Node* node_parent)
                 else
                 {
                     if (
-                        (left_cousin != tree->nil && left_cousin->color == RED) &&
-                        (right_cousin == tree->nil || right_cousin->color == BLACK)
+                        (sib->left != tree->nil && sib->left->color == RED) &&
+                        (sib->right == tree->nil || sib->right->color == BLACK)
                         )
                     {
                         sib->color = RED;
-                        left_cousin->color = BLACK;
+                        sib->left->color = BLACK;
                         rotate_right(tree, sib);
                         
                         sib = parent->right;
-                        left_cousin = sib->left;
-                        right_cousin = sib->right;
+                        sib->left = sib->left;
+                        sib->right = sib->right;
                     }
-                    right_cousin->color = BLACK;
+                    sib->right->color = BLACK;
                     sib->color = parent->color;
                     parent->color = BLACK;
                     rotate_left(tree, parent);
@@ -397,27 +391,18 @@ void reshape_after_deleete(RBT* tree, RBT_Node* node, RBT_Node* node_parent)
         else
         {
             sib = parent->left;
-            if (sib != tree->nil)
-            {
-                left_cousin = sib->left;
-                right_cousin = sib->right;
-            }
-            else
-            {
-                left_cousin = tree->nil;
-                right_cousin = tree->nil;
-            }
 
             if (sib != tree->nil && sib->color == RED)
             {
                 sib->color = BLACK;
-                to_handle = parent;
+                parent->color = RED;
+                rotate_right(tree, parent);
             }
             else
             {
                 if (
-                    (left_cousin == tree->nil || left_cousin->color == BLACK) &&
-                    (right_cousin == tree->nil || right_cousin->color == BLACK)
+                    (sib->left == tree->nil || sib->left->color == BLACK) &&
+                    (sib->right == tree->nil || sib->right->color == BLACK)
                     ) // <<<<<
                 {
                     sib->color = RED;
@@ -427,19 +412,19 @@ void reshape_after_deleete(RBT* tree, RBT_Node* node, RBT_Node* node_parent)
                 else
                 {
                     if (
-                        (left_cousin == tree->nil || left_cousin->color == BLACK) && 
-                        (right_cousin != tree->nil || right_cousin->color == RED) // <<<<<
+                        (sib->left == tree->nil || sib->left->color == BLACK) && 
+                        (sib->right != tree->nil || sib->right->color == RED) // <<<<<
                         )
                     {
                         sib->color = RED;
-                        right_cousin->color = BLACK;
+                        sib->right->color = BLACK;
                         rotate_left(tree, sib);
 
                         sib = parent->left;
-                        left_cousin = sib->left;
-                        right_cousin = sib->right;
+                        sib->left = sib->left;
+                        sib->right = sib->right;
                     }
-                    left_cousin->color = BLACK;
+                    sib->left->color = BLACK;
                     sib->color = parent->color;
                     parent->color = BLACK;
                     rotate_right(tree, parent);
@@ -456,41 +441,38 @@ void reshape_after_deleete(RBT* tree, RBT_Node* node, RBT_Node* node_parent)
 
 void describe(RBT* tree)
 {
-    RBT_Node* q[100];
-    RBT_Node* node_iter;
-    q[0] = tree->root;
+    int power = 0;
     int j = 1;
-    int lf = 1;
+    RBT_Node* q[100] = { NULL };
 
-    printf("\n\n");
-
-    for (int i = 0; i < 20; )
+    q[0] = tree->root;
+    
+    for (int i = 0; i < 20; i++)
     {
-        if (q[j] == NULL)
+        if (q[i] == NULL)
         {
-            printf("END\n");
+            printf("\n\n");
             return;
         }
 
-        node_iter = q[i];
-        if (node_iter->left != tree->nil)
-        {
-            q[j] = node_iter->left; 
-            j++;
-        }
-        if (node_iter->right != tree->nil)
-        {
-            q[j] = node_iter->right;
-            j++;
-        }
-
-        printf(" %d(%d) ", node_iter->data, node_iter->color);
-        
-        i++;
-        if (i == lf)
+        if ((i) == (int)pow(2, power) - 1)
         {
             printf("\n");
-            lf *= 2;
+            power++;
+        }
+
+        if (q[i]->color == RED) printf("%d (RED)\t", q[i]->data);
+        else printf("%d (BLACK)\t", q[i]->data);
+
+        if (q[i] ->left != NULL)
+        {
+            q[j] = q[i]->left;
+            j++;
+        }
+        if (q[i]->right != NULL)
+        {
+            q[j] = q[i]->right;
+            j++;
         }
     }
 }
