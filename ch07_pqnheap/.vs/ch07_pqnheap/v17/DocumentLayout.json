@@ -1,0 +1,125 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\link_heap.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|solutionrelative:link_heap.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\PriorityQueue.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|solutionrelative:PriorityQueue.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\test.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|solutionrelative:test.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\heap_imp.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|solutionrelative:heap_imp.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\heap_imp.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|solutionrelative:heap_imp.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\PriorityQueue.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{E173B02C-F4C4-450E-82A6-1B6C343F080F}|ch07_pqnheap.vcxproj|solutionrelative:PriorityQueue.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "link_heap.c",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\link_heap.c",
+              "RelativeDocumentMoniker": "link_heap.c",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\link_heap.c*",
+              "RelativeToolTip": "link_heap.c*",
+              "ViewState": "AQIAAE8AAAAAAAAAAAAAAFEAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-03-19T10:46:40.248Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "PriorityQueue.c",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\PriorityQueue.c",
+              "RelativeDocumentMoniker": "PriorityQueue.c",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\PriorityQueue.c",
+              "RelativeToolTip": "PriorityQueue.c",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAACIAAAAEAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-03-12T09:59:50.523Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "test.c",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\test.c",
+              "RelativeDocumentMoniker": "test.c",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\test.c",
+              "RelativeToolTip": "test.c",
+              "ViewState": "AQIAAAgAAAAAAAAAAAAAAB8AAAAKAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-03-12T09:50:34.446Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PriorityQueue.h",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\PriorityQueue.h",
+              "RelativeDocumentMoniker": "PriorityQueue.h",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\PriorityQueue.h",
+              "RelativeToolTip": "PriorityQueue.h",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAB8AAAAaAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-03-12T09:53:48.072Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "heap_imp.c",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\heap_imp.c",
+              "RelativeDocumentMoniker": "heap_imp.c",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\heap_imp.c",
+              "RelativeToolTip": "heap_imp.c",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-03-12T08:45:06.802Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "heap_imp.h",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\heap_imp.h",
+              "RelativeDocumentMoniker": "heap_imp.h",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap\\heap_imp.h",
+              "RelativeToolTip": "heap_imp.h",
+              "ViewState": "AQIAABoAAAAAAAAAAAAAACMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-03-12T08:42:34.012Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

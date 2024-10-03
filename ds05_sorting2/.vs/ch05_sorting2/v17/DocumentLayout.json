@@ -1,0 +1,78 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{40EB15B6-316C-439E-8C7E-4AD2045EA667}|ch05_sorting2.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\run.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{40EB15B6-316C-439E-8C7E-4AD2045EA667}|ch05_sorting2.vcxproj|solutionrelative:run.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{40EB15B6-316C-439E-8C7E-4AD2045EA667}|ch05_sorting2.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\sort_imp.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{40EB15B6-316C-439E-8C7E-4AD2045EA667}|ch05_sorting2.vcxproj|solutionrelative:sort_imp.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{40EB15B6-316C-439E-8C7E-4AD2045EA667}|ch05_sorting2.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\sort_def.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{40EB15B6-316C-439E-8C7E-4AD2045EA667}|ch05_sorting2.vcxproj|solutionrelative:sort_def.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "sort_def.h",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\sort_def.h",
+              "RelativeDocumentMoniker": "sort_def.h",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\sort_def.h",
+              "RelativeToolTip": "sort_def.h",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAkAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-08-01T09:15:18.911Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "sort_imp.c",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\sort_imp.c",
+              "RelativeDocumentMoniker": "sort_imp.c",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\sort_imp.c",
+              "RelativeToolTip": "sort_imp.c",
+              "ViewState": "AQIAAGsAAAAAAAAAAAAgwHgAAAAhAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-08-01T09:14:28.092Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "run.c",
+              "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\run.c",
+              "RelativeDocumentMoniker": "run.c",
+              "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch05_sorting2\\run.c",
+              "RelativeToolTip": "run.c",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAAsAAAANAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2024-08-01T09:14:11.771Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
