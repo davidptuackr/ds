@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{FE95EA84-8254-4B49-B3AB-4EABD1A9AB11}|ch07_pqnheap2.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\pq_imp.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{FE95EA84-8254-4B49-B3AB-4EABD1A9AB11}|ch07_pqnheap2.vcxproj|solutionrelative:pq_imp.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{FE95EA84-8254-4B49-B3AB-4EABD1A9AB11}|ch07_pqnheap2.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\ch07_test.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{FE95EA84-8254-4B49-B3AB-4EABD1A9AB11}|ch07_pqnheap2.vcxproj|solutionrelative:ch07_test.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FE95EA84-8254-4B49-B3AB-4EABD1A9AB11}|ch07_pqnheap2.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\pq_imp.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{FE95EA84-8254-4B49-B3AB-4EABD1A9AB11}|ch07_pqnheap2.vcxproj|solutionrelative:pq_imp.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{FE95EA84-8254-4B49-B3AB-4EABD1A9AB11}|ch07_pqnheap2.vcxproj|C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\pq_def.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
@@ -22,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -34,13 +34,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "pq_imp.c",
               "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\pq_imp.c",
               "RelativeDocumentMoniker": "pq_imp.c",
               "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\pq_imp.c",
               "RelativeToolTip": "pq_imp.c",
-              "ViewState": "AgIAADkAAAAAAAAAAAAAAEYAAAACAAAAAAAAAA==",
+              "ViewState": "AgIAAHsAAAAAAAAAAAAAAIQAAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-10-02T09:41:57.355Z",
               "EditorCaption": ""
@@ -59,15 +59,16 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "ch07_test.c",
               "DocumentMoniker": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\ch07_test.c",
               "RelativeDocumentMoniker": "ch07_test.c",
               "ToolTip": "C:\\Users\\davidbowman\\Documents\\dsa\\ch07_pqnheap2\\ch07_test.c",
               "RelativeToolTip": "ch07_test.c",
-              "ViewState": "AgIAABcAAAAAAAAAAAAIwB4AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABsAAAAAAAAAAAAYwCgAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2024-09-18T07:08:38.246Z"
+              "WhenOpened": "2024-09-18T07:08:38.246Z",
+              "EditorCaption": ""
             }
           ]
         }

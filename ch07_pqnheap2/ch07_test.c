@@ -25,7 +25,7 @@ int main()
 		printf("h1 [%d] loc: %p\n", i, p + i);
 	}*/
 
-	PQ* pq = PQ_create(10);
+	PQ* pq = PQ_create(3);
 	PQ_insert(pq, 10, "TASK 10");
 	PQ_insert(pq, 5, "TASK 5");
 	PQ_insert(pq, 2, "TASK 2");
@@ -33,7 +33,12 @@ int main()
 	PQ_insert(pq, 12, "TASK 12");
 	PQ_insert(pq, 23, "TASK 23");
 	PQ_insert(pq, 4, "TASK 4");
+	PQ_insert(pq, 1, "TASK 1");
 
+	PQ_describe(pq);
+
+	PQ_remove(pq);
+	PQ_remove(pq);
 	PQ_describe(pq);
 
 	return 0;

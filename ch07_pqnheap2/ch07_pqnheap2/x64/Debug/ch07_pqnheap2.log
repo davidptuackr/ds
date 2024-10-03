@@ -1,4 +1,3 @@
 ﻿  pq_imp.c
-C:\Users\davidbowman\Documents\dsa\ch07_pqnheap2\pq_imp.c(100,31): warning C4047: '>': 'int *'의 간접 참조 수준이 'int'과(와) 다릅니다.
-C:\Users\davidbowman\Documents\dsa\ch07_pqnheap2\pq_imp.c(118,10): warning C4477: 'printf' : 서식 문자열 '%s'에 'char *' 형식의 인수가 필요하지만 variadic 인수 1의 형식이 'void *'입니다.
+C:\Users\davidbowman\Documents\dsa\ch07_pqnheap2\pq_imp.c(136,10): warning C4477: 'printf' : 서식 문자열 '%s'에 'char *' 형식의 인수가 필요하지만 variadic 인수 1의 형식이 'void *'입니다.
   ch07_pqnheap2.vcxproj -> C:\Users\davidbowman\Documents\dsa\ch07_pqnheap2\x64\Debug\ch07_pqnheap2.exe
