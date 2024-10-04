@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="8be85c79-28b5-4662-9ab8-20d2cd2eb8b6" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.vs/ch07_pqnheap2/CopilotIndices/0.2.1653.9816/SemanticSymbols.db-shm" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/ch07_pqnheap2/CopilotIndices/0.2.1653.9816/SemanticSymbols.db-shm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/ch07_pqnheap2/v17/.suo" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/ch07_pqnheap2/v17/.suo" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/ch07_pqnheap2/v17/ipch/AutoPCH/5167015f8a76efc7/PQ_IMP.ipch" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/ch07_pqnheap2/v17/ipch/AutoPCH/5167015f8a76efc7/PQ_IMP.ipch" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 6
+}]]></component>
+  <component name="ProjectId" id="2mxbOItoYIMaOBUP0KKPQLWI15w" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/davidbowman/Documents/dsa/ch07_pqnheap2"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8be85c79-28b5-4662-9ab8-20d2cd2eb8b6" name="Changes" comment="" />
+      <created>1728021140161</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1728021140161</updated>
+    </task>
+    <servers />
+  </component>
+</project>
