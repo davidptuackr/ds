@@ -14,6 +14,7 @@ typedef struct _OAHT
 {
 	OAHT_Node* data;
 	int size;
+	int cnt;
 } OAHT;
 
 OAHT* OAHT_create(int size);
@@ -25,3 +26,5 @@ int OAHT_shash(OAHT* table, char* key, int mov);
 int OAHT_phash(OAHT* table, char* key, int mov);
 int OAHT_xhash(OAHT* table, char* key);
 void OAHT_re_hash(OAHT* table);
+
+void OAHT_test();

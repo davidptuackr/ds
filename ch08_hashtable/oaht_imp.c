@@ -10,19 +10,26 @@ OAHT* OAHT_create(int size)
 		exit(1);
 	}
 
-	table->data = (OAHT_Node*)malloc(sizeof(OAHT_Node) * size);
+	table->data = (OAHT_Node*)calloc(size, sizeof(OAHT_Node));
 	if (!table->data)
 	{
 		printf("TABLE MALLOC FAILED\n");
 		exit(1);
 	}
 	table->size = size;
+	table->cnt = 0;
 	return table;
 }
 
 void OAHT_set(OAHT* table, int chash(OAHT*, char*, int), char* key, char* cname, int pc)
 {
 	int loc = OAHT_hash(table, key);
+
+	if (table->size / 2 < table->cnt)
+	{
+		printf("OAHT RE_HASH\n");
+		OAHT_re_hash(table);
+	}
 
 	if (table->data[loc].key == 0)
 	{
@@ -49,6 +56,11 @@ void OAHT_set(OAHT* table, int chash(OAHT*, char*, int), char* key, char* cname,
 	if (n > 10)
 	{
 		printf("COLLISION HANDLING FAILED\n");
+	}
+	else
+	{
+		printf("SET OAHT[%d] : (%s, %s, %d)\n", loc, key, cname, pc);
+		table->cnt++;
 	}
 }
 
@@ -78,7 +90,18 @@ void OAHT_describe(OAHT* table)
 {
 	/*
 	* NOW ON IMP : ~ 101824 1550
+	* RE START : 103124 1630 ~
 	*/
+	OAHT_Node* p = table->data;
+
+	for (int i = 0; i < table->size; i++)
+	{
+		if (p->key)
+		{
+			printf("OAHT[%d] : (KEY : %s, NAME : %s, INT : %d)\n", i, p->key, p->cname, p->pc);
+		}
+		p++;
+	}
 }
 
 int OAHT_hash(OAHT* table, char* key)
@@ -93,12 +116,12 @@ int OAHT_hash(OAHT* table, char* key)
 
 int OAHT_shash(OAHT* table, char* key, int mov)
 {
-	return (OAHT_hash(table, key) + mov) & table->size;
+	return (OAHT_hash(table, key) + mov) % table->size;
 }
 
 int OAHT_phash(OAHT* table, char* key, int mov)
 {
-	return (OAHT_hash(table, key) + (mov * mov)) & table->size;
+	return (OAHT_hash(table, key) + (mov * mov)) % table->size;
 }
 
 int OAHT_xhash(OAHT* table, char* key)
@@ -111,5 +134,36 @@ void OAHT_re_hash(OAHT* table)
 {
 	/*
 	* NOW ON IMP : ~ 101824 1550
+	* RE START : 103124 1630
 	*/
+	OAHT_Node* original = table->data;
+
+	table->data = (OAHT_Node*)realloc(table->data, sizeof(OAHT_Node) * table->size * 2);
+	if (!table->data)
+	{
+		printf("MEMORY REALLOC FAILED\n");
+		table->data = original;
+	}
+	else
+	{
+		memset(&(table->data[table->size]), 0, sizeof(OAHT_Node) * table->size);
+		printf("OAHT SIZE : %d -> %d\n", table->size, table->size * 2);
+		table->size *= 2;
+	}
+}
+
+void OAHT_test()
+{
+	OAHT* t = OAHT_create(5);
+	OAHT_set(t, OAHT_shash, "A", "ABC", 10);
+	OAHT_set(t, OAHT_shash, "i", "EEE", 99);
+	OAHT_set(t, OAHT_shash, "ae", "XYZ", 777);
+	OAHT_set(t, OAHT_phash, "aQ", "uwu", 111);
+	OAHT_set(t, OAHT_phash, "U", "UUU", 222);
+	OAHT_set(t, OAHT_xhash, "aaq", "AAQ", 4444);
+	OAHT_set(t, OAHT_xhash, "aag", "AAG", 5555);
+	OAHT_set(t, OAHT_xhash, "ae", "XYZ", 7775);
+	
+
+	OAHT_describe(t);
 }
