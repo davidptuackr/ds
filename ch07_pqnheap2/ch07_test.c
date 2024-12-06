@@ -41,5 +41,15 @@ int main()
 	PQ_remove(pq);
 	PQ_describe(pq);
 
+	int h = 0;
+	char* key = "abc";
+	for (int i = 0; i < 3; i++)
+	{
+		h += key[i];
+		
+	}
+	printf("%d, %d\n", h, (h<<6));
+	printf("%d\n", h & 64);
+
 	return 0;
 }

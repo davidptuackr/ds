@@ -1,7 +1,10 @@
-<<<<<<< HEAD
 /basic/src/ds_ch10_가중치그래프/notes.txt
-=======
 First/*
 P3_pointer/*
 Second/*
->>>>>>> d57bc6a (ch07_pqnheap 진행 중: PQ 구현 중)
+*/x64
+*/*.sln
+*/*.vcxproj*
+*/ch*/*
+.vs
+*/.vs
